@@ -1,0 +1,11 @@
+version: 0.0.1 b{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_branch_with_pr: true
+configuration:
+- Debug
+- Release
+platform: x86
+build:
+  project: .\rslibs.sln
+  verbosity: minimal
