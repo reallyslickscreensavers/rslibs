@@ -1,7 +1,4 @@
-version: 0.0.1 b{build}
 image: Visual Studio 2017
-pull_requests:
-  do_not_increment_build_number: true
 skip_branch_with_pr: true
 init:
 # Set "build version number" to "short-commit-hash" or when tagged to "tag name"
