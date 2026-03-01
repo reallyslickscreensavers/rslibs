@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['*']
+
+# Drop all permissions by default — each job grants only what it needs
+permissions: {}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Windows — MSBuild (Debug + Release matrix)
+  # ---------------------------------------------------------------------------
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read          # Required to checkout the repository
+      checks: write           # Required to create check runs with test results
+      pull-requests: write    # Required to post test result comments on the PR
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build solution (${{ matrix.configuration }})
+        run: msbuild rslibs.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=x86
+
+      - name: Configure tests (CMake)
+        run: cmake -S tests -B tests/build -A Win32
+
+      - name: Build tests
+        run: cmake --build tests/build --config ${{ matrix.configuration }}
+
+      - name: Run tests
+        if: always()
+        run: ctest --test-dir tests/build -C ${{ matrix.configuration }} --output-on-failure --output-junit test-results.xml
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          files: tests/build/test-results.xml
+          comment_title: "Test Results (Windows ${{ matrix.configuration }})"
+          check_name: "Test Results (Windows ${{ matrix.configuration }})"
+
+  # ---------------------------------------------------------------------------
+  # Linux — Make + CMake tests
+  # ---------------------------------------------------------------------------
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read          # Required to checkout the repository
+      checks: write           # Required to create check runs with test results
+      pull-requests: write    # Required to post test result comments on the PR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgl-dev libglu1-mesa-dev libx11-dev libglx-dev
+
+      - name: Build all libraries
+        run: make -j$(nproc)
+
+      - name: Configure tests (CMake)
+        run: cmake -S tests -B tests/build
+
+      - name: Build tests
+        run: cmake --build tests/build -j$(nproc)
+
+      - name: Run tests
+        if: always()
+        run: ctest --test-dir tests/build --output-on-failure --output-junit test-results.xml
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          files: tests/build/test-results.xml
+          comment_title: "Test Results (Linux)"
+          check_name: "Test Results (Linux)"

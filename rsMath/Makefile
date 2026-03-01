@@ -1,5 +1,5 @@
-INCLUDE = -I../../include
-COMPILE = gcc $(INCLUDE) -O3
+INCLUDE = -I..
+COMPILE = g++ $(INCLUDE) -O3
 OBJECTS = rsVec.o \
 	rsVec4.o \
 	rsQuat.o \
@@ -7,7 +7,7 @@ OBJECTS = rsVec.o \
 
 
 all: $(OBJECTS)
-	ar cr ../../lib/rsMath.a $(OBJECTS)
+	ar cr ../lib/rsMath.a $(OBJECTS)
 
 clean:
 	rm ${OBJECTS}
