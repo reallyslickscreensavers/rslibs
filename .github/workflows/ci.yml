@@ -38,7 +38,7 @@ jobs:
 
       - name: Run tests
         if: always()
-        run: ctest --test-dir tests/build -C ${{ matrix.configuration }} --output-on-failure --output-junit tests/build/test-results.xml
+        run: ctest --test-dir tests/build -C ${{ matrix.configuration }} --output-on-failure --output-junit test-results.xml
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action/windows@v2
@@ -77,7 +77,7 @@ jobs:
 
       - name: Run tests
         if: always()
-        run: ctest --test-dir tests/build --output-on-failure --output-junit tests/build/test-results.xml
+        run: ctest --test-dir tests/build --output-on-failure --output-junit test-results.xml
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
