@@ -1,11 +1,10 @@
-INCLUDE = -I../../include
-COMPILE = gcc $(INCLUDE) -O3
-OBJECTS = rsXScreenSaver.o \
-	../util/arguments.o
+INCLUDE = -I..
+COMPILE = g++ $(INCLUDE) -O3
+OBJECTS = rsXScreenSaver.o
 
 
 all: $(OBJECTS)
-	ar cr ../../lib/rsXScreenSaver.a $(OBJECTS)
+	ar cr ../lib/rsXScreenSaver.a $(OBJECTS)
 
 clean:
 	rm $(OBJECTS)
