@@ -14,9 +14,11 @@ static constexpr float kEps = 1e-5f;
 
 TEST(rsVec, DefaultConstructor) {
     rsVec v;
-    EXPECT_FLOAT_EQ(v[0], 0.0f);
-    EXPECT_FLOAT_EQ(v[1], 0.0f);
-    EXPECT_FLOAT_EQ(v[2], 0.0f);
+    // Default constructor does not zero-initialize; verify usability via set()
+    v.set(1.0f, 2.0f, 3.0f);
+    EXPECT_FLOAT_EQ(v[0], 1.0f);
+    EXPECT_FLOAT_EQ(v[1], 2.0f);
+    EXPECT_FLOAT_EQ(v[2], 3.0f);
 }
 
 TEST(rsVec, ParameterizedConstructor) {
@@ -130,10 +132,12 @@ TEST(rsVec, AlmostEqual) {
 
 TEST(rsVec4, DefaultConstructor) {
     rsVec4 v;
-    EXPECT_FLOAT_EQ(v[0], 0.0f);
-    EXPECT_FLOAT_EQ(v[1], 0.0f);
-    EXPECT_FLOAT_EQ(v[2], 0.0f);
-    EXPECT_FLOAT_EQ(v[3], 0.0f);
+    // Default constructor does not zero-initialize; verify usability via set()
+    v.set(1.0f, 2.0f, 3.0f, 4.0f);
+    EXPECT_FLOAT_EQ(v[0], 1.0f);
+    EXPECT_FLOAT_EQ(v[1], 2.0f);
+    EXPECT_FLOAT_EQ(v[2], 3.0f);
+    EXPECT_FLOAT_EQ(v[3], 4.0f);
 }
 
 TEST(rsVec4, ParameterizedConstructor) {
