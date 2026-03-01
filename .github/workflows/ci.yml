@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action/windows@v2
-        if: always()
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           files: tests/build/test-results.xml
           comment_title: "Test Results (Windows ${{ matrix.configuration }})"
@@ -81,7 +81,7 @@ jobs:
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           files: tests/build/test-results.xml
           comment_title: "Test Results (Linux)"
