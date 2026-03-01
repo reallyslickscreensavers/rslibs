@@ -48,4 +48,4 @@ target_include_directories(rslibs_tests PRIVATE
 target_link_libraries(rslibs_tests PRIVATE GTest::gtest_main)
 
 include(GoogleTest)
-gtest_discover_tests(rslibs_tests)
+gtest_discover_tests(rslibs_tests DISCOVERY_MODE PRE_TEST)
