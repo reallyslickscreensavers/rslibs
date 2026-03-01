@@ -9,7 +9,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        v1.14.0
+  GIT_TAG        v1.17.0
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -47,5 +47,6 @@ target_include_directories(rslibs_tests PRIVATE
 
 target_link_libraries(rslibs_tests PRIVATE GTest::gtest_main)
 
+enable_testing()
 include(GoogleTest)
 gtest_discover_tests(rslibs_tests DISCOVERY_MODE PRE_TEST)
