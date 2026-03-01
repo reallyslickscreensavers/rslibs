@@ -59,6 +59,7 @@ TEST(Rgbhsl, BlackSpecialCase) {
     EXPECT_NEAR(l, 0.0f, kEps);
     EXPECT_NEAR(h, 0.0f, kEps);
     // Saturation is undefined when luminosity is 0; the library returns 1.0
+    EXPECT_NEAR(s, 1.0f, kEps);
 }
 
 TEST(Rgbhsl, RoundTripArbitraryColor) {
