@@ -289,3 +289,11 @@ __pycache__/
 
 # Other (custom)
 *.tlog
+
+# CMake / CTest build output
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
