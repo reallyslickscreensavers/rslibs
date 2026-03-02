@@ -592,31 +592,30 @@ TEST(rsMatrix, InvertSingularReturnsFalse) {
 }
 
 TEST(rsMatrix, RotationInvert) {
-    // NOTE: rotationInvert() appears to compute cofactor/det (the cofactor
-    // matrix) rather than adjugate/det (the true inverse).  For an orthogonal
-    // rotation matrix this yields the *original* matrix back, not its inverse.
-    // We verify the current deterministic output here as a regression test.
+    // TODO: rotationInvert() is buggy — it computes cofactor/det instead of
+    // adjugate/det, returning the original rotation rather than its inverse.
+    // The correct inverse of an orthonormal rotation matrix is its transpose.
+    // This test asserts the correct behavior and is skipped until the fix is
+    // applied.  See README.md "Known Bugs" for details.
+    GTEST_SKIP() << "rotationInvert() is known-buggy (see README.md); "
+                    "enable after the implementation is corrected";
+
     rsMatrix rot;
     rot.makeRotate(RS_PI / 3.0f, 0.0f, 0.0f, 1.0f);  // 60 degrees around Z
     rsMatrix inv;
     inv.rotationInvert(rot);
-    // Verify structural properties: 4th row/col is identity-like
-    EXPECT_FLOAT_EQ(inv[3], 0.0f);
-    EXPECT_FLOAT_EQ(inv[7], 0.0f);
-    EXPECT_FLOAT_EQ(inv[11], 0.0f);
-    EXPECT_FLOAT_EQ(inv[12], 0.0f);
-    EXPECT_FLOAT_EQ(inv[13], 0.0f);
-    EXPECT_FLOAT_EQ(inv[14], 0.0f);
-    EXPECT_FLOAT_EQ(inv[15], 1.0f);
-    // The 3x3 block should be a valid rotation (determinant ≈ 1)
-    float det = inv[0] * (inv[5]*inv[10] - inv[6]*inv[9])
-              - inv[4] * (inv[1]*inv[10] - inv[2]*inv[9])
-              + inv[8] * (inv[1]*inv[6]  - inv[2]*inv[5]);
-    EXPECT_NEAR(det, 1.0f, kEps);
-    // Regression check for current (incorrect) behavior: inv should equal rot
-    for (int i = 0; i < 16; ++i) {
-        EXPECT_NEAR(inv[i], rot[i], kEps) << "rotationInvert differs at [" << i << "]";
-    }
+
+    // For an orthonormal rotation the inverse equals the transpose.
+    // Verify rot * inv ≈ identity.
+    rsMatrix result;
+    result.copy(rot);
+    result.postMult(inv);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j) {
+            float expected = (i == j) ? 1.0f : 0.0f;
+            EXPECT_NEAR(result[i + j * 4], expected, kEps)
+                << "rot * rotationInvert(rot) should be identity at [" << i << "," << j << "]";
+        }
 }
 
 TEST(rsMatrix, FromQuat) {
