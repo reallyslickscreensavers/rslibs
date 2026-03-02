@@ -99,10 +99,10 @@ public:
 };
 
 // Generic C-style vector math functions
-float rsLength(float *xyz);
+float rsLength(const float *xyz);
 float rsNormalize(float *xyz);
-float rsDot(float *xyz1, float *xyz2);
-void  rsCross(float *xyz1, float *xyz2, float *xyzOut);
+float rsDot(const float *xyz1, const float *xyz2);
+void  rsCross(const float *xyz1, const float *xyz2, float *xyzOut);
 void  rsScaleVec(float *xyz, float scale);
 
 #endif

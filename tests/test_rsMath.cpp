@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <sstream>
+#include <string>
 #include <rsMath/rsMath.h>
 
 static constexpr float kEps = 1e-5f;
@@ -448,17 +449,21 @@ TEST(rsMatrix, SetGetRoundTrip) {
 }
 
 TEST(rsMatrix, PreMult) {
-    // Test preMult: this = this * postMat
+    // Test preMult: this = this * postMat using non-commuting transforms
+    // a = translation, b = uniform scale. We expect a = a * b.
     rsMatrix a;
-    a.makeTranslate(1.0f, 0.0f, 0.0f);
+    a.makeTranslate(1.0f, 2.0f, 3.0f);
     rsMatrix b;
-    b.makeTranslate(0.0f, 2.0f, 0.0f);
+    b.makeScale(2.0f);
     a.preMult(b);
-    // preMult(b) means a = a * b
-    // Translation should combine: (1,0,0) + (0,2,0) = (1,2,0)
+    // preMult(b) means a = a * b (T * S). For T * S, translation remains (1,2,3).
+    // If implementation incorrectly did a = b * a (S * T), translation would be scaled.
+    EXPECT_NEAR(a[0], 2.0f, kEps);
+    EXPECT_NEAR(a[5], 2.0f, kEps);
+    EXPECT_NEAR(a[10], 2.0f, kEps);
     EXPECT_NEAR(a[12], 1.0f, kEps);
     EXPECT_NEAR(a[13], 2.0f, kEps);
-    EXPECT_NEAR(a[14], 0.0f, kEps);
+    EXPECT_NEAR(a[14], 3.0f, kEps);
 }
 
 TEST(rsMatrix, MakeScaleUniform) {
