@@ -613,6 +613,10 @@ TEST(rsMatrix, RotationInvert) {
               - inv[4] * (inv[1]*inv[10] - inv[2]*inv[9])
               + inv[8] * (inv[1]*inv[6]  - inv[2]*inv[5]);
     EXPECT_NEAR(det, 1.0f, kEps);
+    // Regression check for current (incorrect) behavior: inv should equal rot
+    for (int i = 0; i < 16; ++i) {
+        EXPECT_NEAR(inv[i], rot[i], kEps) << "rotationInvert differs at [" << i << "]";
+    }
 }
 
 TEST(rsMatrix, FromQuat) {

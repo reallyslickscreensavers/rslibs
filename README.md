@@ -47,4 +47,4 @@ m[4] = (mat[9] * mat[2] - mat[10] * mat[1]) / det;  // cofactor(1,0)
 
 These should be transposed so that `m[1]` receives `cofactor(1,0)` and `m[4]` receives `cofactor(0,1)`.
 
-A regression test (`rsMatrix.RotationInvert` in `tests/test_rsMath.cpp`) documents the current (incorrect) behavior and will need to be updated once the fix is applied.
+A regression test (`rsMatrix.RotationInvert` in `tests/test_rsMath.cpp`) exercises `rotationInvert()` and should be reviewed and potentially updated once the implementation is corrected.
