@@ -7,13 +7,6 @@
 #include <sstream>
 #include <rsMath/rsMath.h>
 
-// Free-function declarations (defined in rsVec.cpp but not in any header)
-extern float rsLength(float *xyz);
-extern float rsNormalize(float *xyz);
-extern float rsDot(float *xyz1, float *xyz2);
-extern void  rsCross(float *xyz1, float *xyz2, float *xyzOut);
-extern void  rsScaleVec(float *xyz, float scale);
-
 static constexpr float kEps = 1e-5f;
 
 // ---------------------------------------------------------------------------
@@ -833,16 +826,11 @@ TEST(rsMathUtils, InvSqrtFloat) {
 
 TEST(rsMathUtils, RandiRange) {
     // rsRandi should always return values in [0, max)
-    bool saw_zero = false;
     for (int i = 0; i < 200; ++i) {
         int val = rsRandi(10);
         EXPECT_GE(val, 0);
         EXPECT_LT(val, 10);
-        if (val == 0) saw_zero = true;
     }
-    // With 200 tries, probabilistically should see 0 at least once
-    // Not a hard assert — just a statistical check
-    (void)saw_zero;
 }
 
 TEST(rsMathUtils, RandfRange) {

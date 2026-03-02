@@ -155,15 +155,16 @@ TEST(Rgbhsl, HslTweenBackwardDirection) {
     EXPECT_NEAR(l, 0.5f, kEps);
 }
 
-TEST(Rgbhsl, HslTweenBackwardMidpoint) {
+TEST(Rgbhsl, HslTweenBackwardQuarterpoint) {
     float h, s, l;
     // h1=0.2, h2=0.8, direction=1 (backward from 0.2 toward 0.8)
-    // backward: h1 >= h2 is false, so outh = h1 - tween*(1-(h2-h1))
-    // = 0.2 - 0.5*(1-0.6) = 0.2 - 0.2 = 0.0  (may land at 0.0 or 1.0 due to wrap)
+    // Backward interpolation (no wrap at this tween):
+    // outh = h1 - tween*(1 - (h2 - h1)) = 0.2 - 0.25*(1 - 0.6) = 0.2 - 0.1 = 0.1
     hslTween(0.2f, 1.0f, 1.0f,
              0.8f, 1.0f, 1.0f, 0.25f, 1,
              h, s, l);
-    // At tween=0.25: 0.2 - 0.25*0.4 = 0.2 - 0.1 = 0.1
+    // At tween=0.25 we expect outh = 0.1 (no wrapping); wrap behavior is
+    // covered separately in HslTweenHueWrapping.
     EXPECT_NEAR(h, 0.1f, kEps);
 }
 

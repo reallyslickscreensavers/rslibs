@@ -15,37 +15,37 @@ static constexpr float kTrigEps = 0.01f;
 // ---------------------------------------------------------------------------
 
 TEST(rsTrigonometry, CosfZero) {
-    EXPECT_NEAR(rsCosf(0.0f), std::cosf(0.0f), kTrigEps);
+    EXPECT_NEAR(rsCosf(0.0f), std::cos(0.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfPiOver2) {
-    EXPECT_NEAR(rsCosf(RS_PIo2), std::cosf(RS_PIo2), kTrigEps);
+    EXPECT_NEAR(rsCosf(RS_PIo2), std::cos(RS_PIo2), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfPi) {
-    EXPECT_NEAR(rsCosf(RS_PI), std::cosf(RS_PI), kTrigEps);
+    EXPECT_NEAR(rsCosf(RS_PI), std::cos(RS_PI), kTrigEps);
 }
 
 TEST(rsTrigonometry, Cosf3PiOver2) {
-    EXPECT_NEAR(rsCosf(RS_PI + RS_PIo2), std::cosf(RS_PI + RS_PIo2), kTrigEps);
+    EXPECT_NEAR(rsCosf(RS_PI + RS_PIo2), std::cos(RS_PI + RS_PIo2), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfTwoPi) {
-    EXPECT_NEAR(rsCosf(RS_PIx2), std::cosf(RS_PIx2), kTrigEps);
+    EXPECT_NEAR(rsCosf(RS_PIx2), std::cos(RS_PIx2), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfPiOver4) {
-    EXPECT_NEAR(rsCosf(RS_PI * 0.25f), std::cosf(RS_PI * 0.25f), kTrigEps);
+    EXPECT_NEAR(rsCosf(RS_PI * 0.25f), std::cos(RS_PI * 0.25f), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfPiOver6) {
     const float angle = RS_PI / 6.0f;
-    EXPECT_NEAR(rsCosf(angle), std::cosf(angle), kTrigEps);
+    EXPECT_NEAR(rsCosf(angle), std::cos(angle), kTrigEps);
 }
 
 TEST(rsTrigonometry, CosfPiOver3) {
     const float angle = RS_PI / 3.0f;
-    EXPECT_NEAR(rsCosf(angle), std::cosf(angle), kTrigEps);
+    EXPECT_NEAR(rsCosf(angle), std::cos(angle), kTrigEps);
 }
 
 // ---------------------------------------------------------------------------
@@ -53,37 +53,37 @@ TEST(rsTrigonometry, CosfPiOver3) {
 // ---------------------------------------------------------------------------
 
 TEST(rsTrigonometry, SinfZero) {
-    EXPECT_NEAR(rsSinf(0.0f), std::sinf(0.0f), kTrigEps);
+    EXPECT_NEAR(rsSinf(0.0f), std::sin(0.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfPiOver2) {
-    EXPECT_NEAR(rsSinf(RS_PIo2), std::sinf(RS_PIo2), kTrigEps);
+    EXPECT_NEAR(rsSinf(RS_PIo2), std::sin(RS_PIo2), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfPi) {
-    EXPECT_NEAR(rsSinf(RS_PI), std::sinf(RS_PI), kTrigEps);
+    EXPECT_NEAR(rsSinf(RS_PI), std::sin(RS_PI), kTrigEps);
 }
 
 TEST(rsTrigonometry, Sinf3PiOver2) {
-    EXPECT_NEAR(rsSinf(RS_PI + RS_PIo2), std::sinf(RS_PI + RS_PIo2), kTrigEps);
+    EXPECT_NEAR(rsSinf(RS_PI + RS_PIo2), std::sin(RS_PI + RS_PIo2), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfTwoPi) {
-    EXPECT_NEAR(rsSinf(RS_PIx2), std::sinf(RS_PIx2), kTrigEps);
+    EXPECT_NEAR(rsSinf(RS_PIx2), std::sin(RS_PIx2), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfPiOver4) {
-    EXPECT_NEAR(rsSinf(RS_PI * 0.25f), std::sinf(RS_PI * 0.25f), kTrigEps);
+    EXPECT_NEAR(rsSinf(RS_PI * 0.25f), std::sin(RS_PI * 0.25f), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfPiOver6) {
     const float angle = RS_PI / 6.0f;
-    EXPECT_NEAR(rsSinf(angle), std::sinf(angle), kTrigEps);
+    EXPECT_NEAR(rsSinf(angle), std::sin(angle), kTrigEps);
 }
 
 TEST(rsTrigonometry, SinfPiOver3) {
     const float angle = RS_PI / 3.0f;
-    EXPECT_NEAR(rsSinf(angle), std::sinf(angle), kTrigEps);
+    EXPECT_NEAR(rsSinf(angle), std::sin(angle), kTrigEps);
 }
 
 // Verify fundamental identity: sin^2 + cos^2 = 1
@@ -103,40 +103,40 @@ TEST(rsTrigonometry, PythagoreanIdentity) {
 
 TEST(rsTrigonometry, Atan2fPositiveXAxis) {
     // atan2(0, 1) = 0
-    EXPECT_NEAR(rsAtan2f(0.0f, 1.0f), std::atan2f(0.0f, 1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(0.0f, 1.0f), std::atan2(0.0f, 1.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fPositiveYAxis) {
     // atan2(1, 0) = pi/2
-    EXPECT_NEAR(rsAtan2f(1.0f, 0.0f), std::atan2f(1.0f, 0.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(1.0f, 0.0f), std::atan2(1.0f, 0.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fNegativeXAxis) {
     // atan2(0, -1) = pi
-    EXPECT_NEAR(rsAtan2f(0.0f, -1.0f), std::atan2f(0.0f, -1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(0.0f, -1.0f), std::atan2(0.0f, -1.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fNegativeYAxis) {
     // atan2(-1, 0) = -pi/2
-    EXPECT_NEAR(rsAtan2f(-1.0f, 0.0f), std::atan2f(-1.0f, 0.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(-1.0f, 0.0f), std::atan2(-1.0f, 0.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fDiagonal) {
     // atan2(1, 1) = pi/4
-    EXPECT_NEAR(rsAtan2f(1.0f, 1.0f), std::atan2f(1.0f, 1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(1.0f, 1.0f), std::atan2(1.0f, 1.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fNegativeDiagonal) {
     // atan2(-1, -1) = -3pi/4
-    EXPECT_NEAR(rsAtan2f(-1.0f, -1.0f), std::atan2f(-1.0f, -1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(-1.0f, -1.0f), std::atan2(-1.0f, -1.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fQuadrant2) {
     // atan2(1, -1) = 3pi/4
-    EXPECT_NEAR(rsAtan2f(1.0f, -1.0f), std::atan2f(1.0f, -1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(1.0f, -1.0f), std::atan2(1.0f, -1.0f), kTrigEps);
 }
 
 TEST(rsTrigonometry, Atan2fQuadrant4) {
     // atan2(-1, 1) = -pi/4
-    EXPECT_NEAR(rsAtan2f(-1.0f, 1.0f), std::atan2f(-1.0f, 1.0f), kTrigEps);
+    EXPECT_NEAR(rsAtan2f(-1.0f, 1.0f), std::atan2(-1.0f, 1.0f), kTrigEps);
 }
