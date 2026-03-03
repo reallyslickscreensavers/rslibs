@@ -105,4 +105,20 @@ float rsDot(const float *xyz1, const float *xyz2);
 void  rsCross(const float *xyz1, const float *xyz2, float *xyzOut);
 void  rsScaleVec(float *xyz, float scale);
 
+// Backward-compatible overloads with non-const input pointers
+inline float rsLength(float *xyz)
+{
+	return rsLength(static_cast<const float*>(xyz));
+}
+
+inline float rsDot(float *xyz1, float *xyz2)
+{
+	return rsDot(static_cast<const float*>(xyz1), static_cast<const float*>(xyz2));
+}
+
+inline void rsCross(float *xyz1, float *xyz2, float *xyzOut)
+{
+	rsCross(static_cast<const float*>(xyz1), static_cast<const float*>(xyz2), xyzOut);
+}
+
 #endif
