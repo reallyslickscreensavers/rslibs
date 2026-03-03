@@ -125,7 +125,7 @@ rsVec::almostEqual(rsVec vec, float tolerance)
 
 // Generic vector math functions
 float
-rsLength(float *xyz)
+rsLength(const float *xyz)
 {
 	return(float(sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1] + xyz[2] * xyz[2])));
 }
@@ -146,13 +146,13 @@ rsNormalize(float *xyz)
 }
 
 float
-rsDot(float *xyz1, float *xyz2)
+rsDot(const float *xyz1, const float *xyz2)
 {
 	return(xyz1[0] * xyz2[0] + xyz1[1] * xyz2[1] + xyz1[2] * xyz2[2]);
 }
 
 void
-rsCross(float *xyz1, float *xyz2, float *xyzOut)
+rsCross(const float *xyz1, const float *xyz2, float *xyzOut)
 {
 	xyzOut[0] = xyz1[1] * xyz2[2] - xyz2[1] * xyz1[2];
 	xyzOut[1] = xyz1[2] * xyz2[0] - xyz2[2] * xyz1[0];

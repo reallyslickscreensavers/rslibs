@@ -31,18 +31,35 @@ set(RGBHSL_SOURCES
     ${REPO_ROOT}/Rgbhsl/Rgbhsl.cpp
 )
 
+# Implicit library sources (excluding impSurface and impCubeVolume which depend on OpenGL)
+set(IMPLICIT_SOURCES
+    ${REPO_ROOT}/Implicit/impShape.cpp
+    ${REPO_ROOT}/Implicit/impSphere.cpp
+    ${REPO_ROOT}/Implicit/impEllipsoid.cpp
+    ${REPO_ROOT}/Implicit/impTorus.cpp
+    ${REPO_ROOT}/Implicit/impKnot.cpp
+    ${REPO_ROOT}/Implicit/impCapsule.cpp
+    ${REPO_ROOT}/Implicit/impRoundedHexahedron.cpp
+    ${REPO_ROOT}/Implicit/impHexahedron.cpp
+    ${REPO_ROOT}/Implicit/impCubeTables.cpp
+)
+
 # Test executable
 add_executable(rslibs_tests
     test_rsMath.cpp
+    test_rsTrigonometry.cpp
     test_Rgbhsl.cpp
+    test_Implicit.cpp
     ${RSMATH_SOURCES}
     ${RGBHSL_SOURCES}
+    ${IMPLICIT_SOURCES}
 )
 
 target_include_directories(rslibs_tests PRIVATE
     ${REPO_ROOT}             # for <rsMath/rsMath.h> style
     ${REPO_ROOT}/rsMath      # for "rsMath.h" style (used by .cpp files)
     ${REPO_ROOT}/Rgbhsl      # for "Rgbhsl.h" style (used by .cpp files)
+    ${REPO_ROOT}/Implicit    # for "impShape.h" style (used by .cpp files)
 )
 
 target_link_libraries(rslibs_tests PRIVATE GTest::gtest_main)

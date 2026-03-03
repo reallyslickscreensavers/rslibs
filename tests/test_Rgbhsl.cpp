@@ -118,3 +118,95 @@ TEST(Rgbhsl, RgbTweenEndpoints) {
     EXPECT_NEAR(g, 1.0f, kEps);
     EXPECT_NEAR(b, 0.0f, kEps);
 }
+
+// ---------------------------------------------------------------------------
+// hslTween midpoint and direction tests
+// ---------------------------------------------------------------------------
+
+TEST(Rgbhsl, HslTweenMidpoint) {
+    float h, s, l;
+    // Tween at 0.5 between two HSL colors (forward direction)
+    hslTween(0.0f, 1.0f, 1.0f,
+             0.5f, 0.5f, 0.5f, 0.5f, 0,
+             h, s, l);
+    // Midpoint: h = 0.25, s = 0.75, l = 0.75
+    EXPECT_NEAR(h, 0.25f, kEps);
+    EXPECT_NEAR(s, 0.75f, kEps);
+    EXPECT_NEAR(l, 0.75f, kEps);
+}
+
+TEST(Rgbhsl, HslTweenBackwardDirection) {
+    float h, s, l;
+    // direction=1: backward around color wheel
+    // h1=0.0, h2=0.5, tween=0.0 => h1
+    hslTween(0.0f, 1.0f, 1.0f,
+             0.5f, 0.5f, 0.5f, 0.0f, 1,
+             h, s, l);
+    EXPECT_NEAR(h, 0.0f, kEps);
+    EXPECT_NEAR(s, 1.0f, kEps);
+    EXPECT_NEAR(l, 1.0f, kEps);
+
+    // tween=1.0
+    hslTween(0.0f, 1.0f, 1.0f,
+             0.5f, 0.5f, 0.5f, 1.0f, 1,
+             h, s, l);
+    EXPECT_NEAR(h, 0.5f, kEps);
+    EXPECT_NEAR(s, 0.5f, kEps);
+    EXPECT_NEAR(l, 0.5f, kEps);
+}
+
+TEST(Rgbhsl, HslTweenBackwardQuarterpoint) {
+    float h, s, l;
+    // h1=0.2, h2=0.8, direction=1 (backward from 0.2 toward 0.8)
+    // Backward interpolation (no wrap at this tween):
+    // outh = h1 - tween*(1 - (h2 - h1)) = 0.2 - 0.25*(1 - 0.6) = 0.2 - 0.1 = 0.1
+    hslTween(0.2f, 1.0f, 1.0f,
+             0.8f, 1.0f, 1.0f, 0.25f, 1,
+             h, s, l);
+    // At tween=0.25 we expect outh = 0.1 (no wrapping); wrap behavior is
+    // covered separately in HslTweenHueWrapping.
+    EXPECT_NEAR(h, 0.1f, kEps);
+}
+
+TEST(Rgbhsl, HslTweenHueWrapping) {
+    float h, s, l;
+    // Forward: h1=0.8, h2=0.2. Forward wraps through 1.0.
+    // outh = 0.8 + 0.75*(1.0 - 0.6) = 0.8 + 0.3 = 1.1 → wraps to 0.1
+    hslTween(0.8f, 1.0f, 1.0f,
+             0.2f, 1.0f, 1.0f, 0.75f, 0,
+             h, s, l);
+    EXPECT_NEAR(h, 0.1f, kEps);
+}
+
+TEST(Rgbhsl, RgbTweenMidpoint) {
+    float r, g, b;
+    // Midpoint between red and green (through HSL space)
+    rgbTween(1.0f, 0.0f, 0.0f,
+             0.0f, 1.0f, 0.0f, 0.5f, 0,
+             r, g, b);
+    // Should be a yellow-ish color (both r and g present)
+    EXPECT_GT(r, 0.0f);
+    EXPECT_GT(g, 0.0f);
+}
+
+TEST(Rgbhsl, RgbTweenBackward) {
+    float r, g, b;
+    // Same endpoints but direction=1
+    rgbTween(1.0f, 0.0f, 0.0f,
+             0.0f, 1.0f, 0.0f, 0.5f, 1,
+             r, g, b);
+    // Should produce a different color than forward direction (goes through blue)
+    // Blue component should be present
+    EXPECT_GT(b, 0.0f);
+}
+
+TEST(Rgbhsl, Grayscale) {
+    float h, s, l;
+    // White (1,1,1) is a clean grayscale case for this implementation
+    rgb2hsl(1.0f, 1.0f, 1.0f, h, s, l);
+    EXPECT_NEAR(s, 0.0f, kEps);
+    EXPECT_NEAR(l, 1.0f, kEps);
+    // Black (0,0,0)
+    rgb2hsl(0.0f, 0.0f, 0.0f, h, s, l);
+    EXPECT_NEAR(l, 0.0f, kEps);
+}
