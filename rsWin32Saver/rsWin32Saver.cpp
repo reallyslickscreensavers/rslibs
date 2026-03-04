@@ -34,7 +34,6 @@ HWND mainWindow = 0;
 int childPreview = 0;
 int windowedSaver = 0;
 int reallyClose = 0;
-int checkingPassword = 0;
 int isSuspended = 0;
 int doingPreview = 0;
 int pfd_swap_exchange = 0;
@@ -45,75 +44,9 @@ int kStatistics = 0;
 POINT mousePoint;
 int closing = 0;
 int wakeThreshold = 4;  // must move 4 pixels to wake up
-typedef BOOL(WINAPI* VERIFYPASSWORDPROC) (HWND hwnd);
-typedef VOID(WINAPI* PASSWORDCHANGEPROC) (LPCSTR regKeyName, HWND hwnd, DWORD dwd, LPVOID lpv);
-
 static int startScreenSaver(HWND parent);
 static int openConfigBox(HWND parent);
 static int startSaverPreview(LPCTSTR str);
-
-//----------------------------------------------------------------------------
-// Password functions (only needed on Win95 and Win98)
-// I think this code still has trouble actually drawing the password checking box
-// Maybe I should install Win95 and test it.  Ha!
-
-BOOL
-checkPassword(HWND hwnd)
-{
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-	if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-	{  // this is Win95 or Win98
-		HINSTANCE passwordcpl = LoadLibrary("PASSWORD.CPL");
-		if (passwordcpl == NULL)
-			return TRUE;
-
-		VERIFYPASSWORDPROC verifyPwdProc;
-		verifyPwdProc = (VERIFYPASSWORDPROC)GetProcAddress(passwordcpl, "VerifyScreenSavePwd");
-		if (verifyPwdProc == NULL)
-		{
-			FreeLibrary(passwordcpl);
-			return TRUE;
-		}
-
-		BOOL junk;
-		SystemParametersInfo(SPI_SCREENSAVERRUNNING, TRUE, &junk, 0);  // disable ctrl-alt-delete
-		checkingPassword = TRUE;
-		BOOL verified = verifyPwdProc(hwnd);
-		checkingPassword = FALSE;
-		SystemParametersInfo(SPI_SCREENSAVERRUNNING, FALSE, &junk, 0);
-		FreeLibrary(passwordcpl);
-
-		return verified;
-	}
-
-	return TRUE;
-}
-
-void
-changePassword(HWND hwnd)
-{
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-	if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-	{  // this is Win95 or Win98
-		HINSTANCE mprdll = LoadLibrary("MPR.DLL");
-		if (mprdll == NULL)
-			return;
-
-		PASSWORDCHANGEPROC PwdChangePassword = (PASSWORDCHANGEPROC)GetProcAddress(mprdll, "PwdChangePasswordA");
-		if (PwdChangePassword == NULL)
-		{
-			FreeLibrary(mprdll);
-			return;
-		}
-
-		PwdChangePassword("SCRSAVE", hwnd, 0, 0);
-		FreeLibrary(mprdll);
-	}
-}
 
 //----------------------------------------------------------------------------
 
@@ -133,17 +66,9 @@ defScreenSaverProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				// NT will sometimes send a WM_CLOSE on its own.
 				if (reallyClose == 0)
 					return 0;
-				// Check password on Win95 or Win98 (NT takes care of this on its own)
-				if (checkPassword(hwnd) == FALSE)
-				{
-					GetCursorPos(&mousePoint);  // reset mouse position if not quitting
-					return 0;
-				}
 				break;
 			default: {
 				POINT movePoint, checkPoint;
-				if (checkingPassword)
-					break;
 				switch (msg)
 				{
 					case WM_SHOWWINDOW:
@@ -580,10 +505,6 @@ WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow)
 			case TEXT('/'):
 				commandLine++;
 				break;
-			case TEXT('a'):  // change password on Win95
-			case TEXT('A'):
-				changePassword(parent);
-				return -1;
 			case TEXT('c'):  // open "settings" dialog box
 			case TEXT('C'):
 				return openConfigBox(GetForegroundWindow());
