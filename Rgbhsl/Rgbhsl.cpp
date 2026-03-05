@@ -76,9 +76,9 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 
 	if (l < kEpsilon)
 	{
-		// Near-black: l is very small, h is set to zero, and s is arbitrarily set to 1.0 (legacy convention).
+		// Near-black: l is very small; set achromatic output so round-trips stay grayscale.
 		h = 0.0f;
-		s = 1.0f;
+		s = 0.0f;
 		return;
 	}
 

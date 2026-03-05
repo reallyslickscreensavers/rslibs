@@ -58,8 +58,8 @@ TEST(Rgbhsl, BlackSpecialCase) {
     rgb2hsl(0.0f, 0.0f, 0.0f, h, s, l);
     EXPECT_NEAR(l, 0.0f, kEps);
     EXPECT_NEAR(h, 0.0f, kEps);
-    // Saturation is undefined when luminosity is 0; the library returns 1.0
-    EXPECT_NEAR(s, 1.0f, kEps);
+    // Saturation is set to 0 for near-black inputs so round-trips stay achromatic.
+    EXPECT_NEAR(s, 0.0f, kEps);
 }
 
 TEST(Rgbhsl, RoundTripArbitraryColor) {
@@ -222,6 +222,30 @@ TEST(Rgbhsl, NearZeroLuminosity) {
     EXPECT_TRUE(std::isfinite(s));
     EXPECT_TRUE(std::isfinite(l));
     EXPECT_NEAR(l, 0.0f, kEps);
+
+    // For near-black input, hue is effectively undefined; instead of asserting
+    // a particular h value, verify that converting back via hsl2rgb produces
+    // a finite, in-range, near-black grayscale color (and close to the original).
+    float r, g, b;
+    hsl2rgb(h, s, l, r, g, b);
+    EXPECT_TRUE(std::isfinite(r));
+    EXPECT_TRUE(std::isfinite(g));
+    EXPECT_TRUE(std::isfinite(b));
+    EXPECT_GE(r, 0.0f);
+    EXPECT_LE(r, 1.0f);
+    EXPECT_GE(g, 0.0f);
+    EXPECT_LE(g, 1.0f);
+    EXPECT_GE(b, 0.0f);
+    EXPECT_LE(b, 1.0f);
+    // Remain grayscale: equal channels within epsilon.
+    EXPECT_NEAR(r, g, kEps);
+    EXPECT_NEAR(g, b, kEps);
+    // Stay very dark and close to the original near-black input.
+    float maxChannel = std::fmax(r, std::fmax(g, b));
+    EXPECT_LE(maxChannel, kEps);
+    EXPECT_NEAR(r, 1e-8f, kEps);
+    EXPECT_NEAR(g, 1e-8f, kEps);
+    EXPECT_NEAR(b, 1e-8f, kEps);
 }
 
 TEST(Rgbhsl, MidGraySafety) {
