@@ -295,6 +295,11 @@ TEST(Rgbhsl, BlueDominantPreservesBlueLuminosityOnRoundTrip) {
     // Ensure round-trip brightness is not clipped to the original green channel.
     float maxOut = std::fmax(r, std::fmax(g, b));
     EXPECT_NEAR(maxOut, b0, kEps);
+
+    // Also ensure full RGB round-trip fidelity for this blue-dominant case.
+    EXPECT_NEAR(r, r0, kEps);
+    EXPECT_NEAR(g, g0, kEps);
+    EXPECT_NEAR(b, b0, kEps);
 }
 
 struct RgbColor {

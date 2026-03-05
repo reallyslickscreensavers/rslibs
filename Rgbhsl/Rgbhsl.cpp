@@ -155,10 +155,10 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 			h = ((1.0f - rr) / 6.0f) + kOneSixth;
 			break;
 		case 2:
-			h = (bb / 6.0f) + kOneThird;
+			h = ((1.0f - gg) / 6.0f) + kOneHalf;
 			break;
 		case 3:
-			h = ((1.0f - gg) / 6.0f) + kOneHalf;
+			h = (bb / 6.0f) + kOneThird;
 			break;
 		case 4:
 			h = (rr / 6.0f) + kTwoThirds;
