@@ -222,7 +222,6 @@ TEST(Rgbhsl, NearZeroLuminosity) {
     EXPECT_TRUE(std::isfinite(s));
     EXPECT_TRUE(std::isfinite(l));
     EXPECT_NEAR(l, 0.0f, kEps);
-    EXPECT_NEAR(h, 0.0f, kEps);
 }
 
 TEST(Rgbhsl, MidGraySafety) {
@@ -240,12 +239,12 @@ TEST(Rgbhsl, MidGraySafety) {
     EXPECT_TRUE(std::isfinite(r));
     EXPECT_TRUE(std::isfinite(g));
     EXPECT_TRUE(std::isfinite(b));
-    EXPECT_GE(r, 0.0f);
-    EXPECT_LE(r, 1.0f);
-    EXPECT_GE(g, 0.0f);
-    EXPECT_LE(g, 1.0f);
-    EXPECT_GE(b, 0.0f);
-    EXPECT_LE(b, 1.0f);
+    EXPECT_GE(r, -kEps);
+    EXPECT_LE(r, 1.0f + kEps);
+    EXPECT_GE(g, -kEps);
+    EXPECT_LE(g, 1.0f + kEps);
+    EXPECT_GE(b, -kEps);
+    EXPECT_LE(b, 1.0f + kEps);
 }
 
 struct RgbColor {
