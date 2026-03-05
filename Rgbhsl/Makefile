@@ -1,5 +1,5 @@
 INCLUDE = -I..
-COMPILE = g++ $(INCLUDE) -O3
+COMPILE = g++ $(INCLUDE) -std=c++14 -O3
 OBJECTS = Rgbhsl.o
 
 
