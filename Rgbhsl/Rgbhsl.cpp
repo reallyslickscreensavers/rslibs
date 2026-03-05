@@ -30,10 +30,9 @@ static constexpr float kTwoThirds  = 2.0f / 3.0f;
 static constexpr float kFiveSixths = 5.0f / 6.0f;
 
 void
-rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
+rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 {
 	int huezone = 0;
-	float rr, gg, bb;
 
 	// find huezone
 	if (r >= g)
@@ -82,26 +81,6 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 		return;
 	}
 
-	switch (huezone)
-	{
-		case 0:
-		case 5:
-			rr = 1.0f;
-			gg = g / l;
-			bb = b / l;
-			break;
-		case 1:
-		case 2:
-			gg = 1.0f;
-			rr = r / l;
-			bb = b / l;
-			break;
-		default:
-			bb = 1.0f;
-			rr = r / l;
-			gg = g / l;
-	}
-
 	// saturation
 	switch (huezone)
 	{
@@ -114,9 +93,6 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 				h = 0.0f;
 				return;
 			}
-			bb = 0.0f;
-			rr = 1.0f - ((1.0f - rr) / s);
-			gg = 1.0f - ((1.0f - gg) / s);
 			break;
 		case 2:
 		case 3:
@@ -127,9 +103,6 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 				h = 0.0f;
 				return;
 			}
-			rr = 0.0f;
-			gg = 1.0f - ((1.0f - gg) / s);
-			bb = 1.0f - ((1.0f - bb) / s);
 			break;
 		default:
 			s = 1.0f - g;
@@ -139,9 +112,6 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 				h = 0.0f;
 				return;
 			}
-			gg = 0.0f;
-			rr = 1.0f - ((1.0f - rr) / s);
-			bb = 1.0f - ((1.0f - bb) / s);
 	}
 
 	// hue
@@ -168,7 +138,7 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 }
 
 void
-hsl2rgb(float h, float s, float l, float &r, float &g, float &b) noexcept
+hsl2rgb(float h, float s, float l, float &r, float &g, float &b)
 {
 	// hue influence
 	h = std::fmod(h, 1.0f);
@@ -234,7 +204,7 @@ hsl2rgb(float h, float s, float l, float &r, float &g, float &b) noexcept
 void
 hslTween(float h1, float s1, float l1,
 	float h2, float s2, float l2, float tween, int direction,
-	float &outh, float &outs, float &outl) noexcept
+	float &outh, float &outs, float &outl)
 {
 	// hue
 	if (!direction)
@@ -270,7 +240,7 @@ hslTween(float h1, float s1, float l1,
 void
 rgbTween(float r1, float g1, float b1,
 	float r2, float g2, float b2, float tween, int direction,
-	float &outr, float &outg, float &outb) noexcept
+	float &outr, float &outg, float &outb)
 {
 	float h1, s1, l1, h2, s2, l2, outh, outs, outl;
 
