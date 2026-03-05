@@ -108,7 +108,12 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 		case 0:
 		case 1:
 			s = 1.0f - b;
-			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
+			if (s < kEpsilon)
+			{
+				s = 0.0f;
+				h = 0.0f;
+				return;
+			}
 			bb = 0.0f;
 			rr = 1.0f - ((1.0f - rr) / s);
 			gg = 1.0f - ((1.0f - gg) / s);
@@ -116,14 +121,24 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 		case 2:
 		case 3:
 			s = 1.0f - r;
-			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
+			if (s < kEpsilon)
+			{
+				s = 0.0f;
+				h = 0.0f;
+				return;
+			}
 			rr = 0.0f;
 			gg = 1.0f - ((1.0f - gg) / s);
 			bb = 1.0f - ((1.0f - bb) / s);
 			break;
 		default:
 			s = 1.0f - g;
-			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
+			if (s < kEpsilon)
+			{
+				s = 0.0f;
+				h = 0.0f;
+				return;
+			}
 			gg = 0.0f;
 			rr = 1.0f - ((1.0f - rr) / s);
 			bb = 1.0f - ((1.0f - bb) / s);
