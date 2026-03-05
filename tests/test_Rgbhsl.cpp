@@ -254,7 +254,10 @@ struct RgbColor {
 class RgbhslRoundTrip : public ::testing::TestWithParam<RgbColor> {};
 
 TEST_P(RgbhslRoundTrip, AllPrimarySecondaryRoundTrip) {
-    auto [r0, g0, b0] = GetParam();
+    RgbColor color = GetParam();
+    float r0 = color.r;
+    float g0 = color.g;
+    float b0 = color.b;
     float h, s, l, r, g, b;
     rgb2hsl(r0, g0, b0, h, s, l);
     hsl2rgb(h, s, l, r, g, b);
