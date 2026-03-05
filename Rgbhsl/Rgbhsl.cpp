@@ -66,7 +66,7 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 			l = r;
 			break;
 		case 1:
-		case 2:
+		case 3:
 			l = g;
 			break;
 		default:

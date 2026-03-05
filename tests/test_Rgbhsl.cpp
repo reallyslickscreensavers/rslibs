@@ -271,6 +271,32 @@ TEST(Rgbhsl, MidGraySafety) {
     EXPECT_LE(b, 1.0f + kEps);
 }
 
+TEST(Rgbhsl, BlueDominantPreservesBlueLuminosityOnRoundTrip) {
+    float h, s, l, r, g, b;
+    const float r0 = 0.1f;
+    const float g0 = 0.4f;
+    const float b0 = 0.8f;  // b > g > r: huezone 2 path.
+
+    rgb2hsl(r0, g0, b0, h, s, l);
+    // Regression: blue-dominant inputs must use blue as luminosity.
+    EXPECT_NEAR(l, b0, kEps);
+
+    hsl2rgb(h, s, l, r, g, b);
+    EXPECT_TRUE(std::isfinite(r));
+    EXPECT_TRUE(std::isfinite(g));
+    EXPECT_TRUE(std::isfinite(b));
+    EXPECT_GE(r, -kEps);
+    EXPECT_LE(r, 1.0f + kEps);
+    EXPECT_GE(g, -kEps);
+    EXPECT_LE(g, 1.0f + kEps);
+    EXPECT_GE(b, -kEps);
+    EXPECT_LE(b, 1.0f + kEps);
+
+    // Ensure round-trip brightness is not clipped to the original green channel.
+    float maxOut = std::fmax(r, std::fmax(g, b));
+    EXPECT_NEAR(maxOut, b0, kEps);
+}
+
 struct RgbColor {
     float r, g, b;
 };
