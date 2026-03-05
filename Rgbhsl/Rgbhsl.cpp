@@ -84,6 +84,7 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 	}
 	if (l < kEpsilon)
 	{
+		// Black: h and l are zero; s is arbitrarily set to 1.0 (legacy convention).
 		h = 0.0f;
 		s = 1.0f;
 		return;
@@ -144,6 +145,7 @@ hsl2rgb(float h, float s, float l, float &r, float &g, float &b) noexcept
 {
 	// hue influence
 	h = std::fmod(h, 1.0f);
+	if (h < 0.0f) h += 1.0f;
 	if (h < kOneSixth)
 	{  // full red, some green
 		r = 1.0f;
