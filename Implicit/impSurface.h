@@ -25,6 +25,7 @@
 #include <windows.h>
 #endif
 #include <vector>
+#include <cstddef>
 
 #include <GL/gl.h>
 #include <GL/glext.h>
