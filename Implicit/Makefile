@@ -1,6 +1,6 @@
 INCLUDE  = -I..
 CXX      ?= g++
-CXXFLAGS += -std=c++14 -O3 -DGL_GLEXT_PROTOTYPES -msse -mfpmath=sse
+CXXFLAGS ?= -std=c++14 -O3 -DGL_GLEXT_PROTOTYPES -msse -mfpmath=sse
 OBJECTS  = impCubeTables.o \
 	impCubeVolume.o \
 	impSurface.o \

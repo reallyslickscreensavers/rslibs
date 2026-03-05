@@ -1,6 +1,6 @@
 INCLUDE  = -I..
 CXX      ?= g++
-CXXFLAGS += -std=c++14 -O3
+CXXFLAGS ?= -std=c++14 -O3
 OBJECTS  = rsXScreenSaver.o
 
 

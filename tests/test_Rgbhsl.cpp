@@ -244,9 +244,9 @@ TEST(Rgbhsl, NearZeroLuminosity) {
     // Stay very dark and close to the original near-black input.
     float maxChannel = std::fmax(r, std::fmax(g, b));
     EXPECT_LE(maxChannel, kEps);
-    EXPECT_NEAR(r, 1e-8f, kEps);
-    EXPECT_NEAR(g, 1e-8f, kEps);
-    EXPECT_NEAR(b, 1e-8f, kEps);
+    EXPECT_NEAR(r, 0.0f, kEps);
+    EXPECT_NEAR(g, 0.0f, kEps);
+    EXPECT_NEAR(b, 0.0f, kEps);
 }
 
 TEST(Rgbhsl, MidGraySafety) {
@@ -307,7 +307,7 @@ struct RgbColor {
     float r, g, b;
 };
 
-void PrintTo(const RgbColor& c, std::ostream* os) {
+static void PrintTo(const RgbColor& c, std::ostream* os) {
     *os << "{r=" << c.r << ", g=" << c.g << ", b=" << c.b << "}";
 }
 
