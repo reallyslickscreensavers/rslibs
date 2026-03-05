@@ -1,6 +1,7 @@
-INCLUDE = -I..
-COMPILE = g++ $(INCLUDE) -std=c++14 -O3
-OBJECTS = rsXScreenSaver.o
+INCLUDE  = -I..
+CXX      ?= g++
+CXXFLAGS += -std=c++14 -O3
+OBJECTS  = rsXScreenSaver.o
 
 
 all: $(OBJECTS)
@@ -13,4 +14,4 @@ clean:
 .SUFFIXES: .cpp .o
 
 .cpp.o:
-	$(COMPILE) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<

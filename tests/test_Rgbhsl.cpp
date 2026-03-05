@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <cmath>
+#include <ostream>
 #include <Rgbhsl/Rgbhsl.h>
 
 static constexpr float kEps = 1e-3f;
@@ -305,6 +306,10 @@ TEST(Rgbhsl, BlueDominantPreservesBlueLuminosityOnRoundTrip) {
 struct RgbColor {
     float r, g, b;
 };
+
+void PrintTo(const RgbColor& c, std::ostream* os) {
+    *os << "{r=" << c.r << ", g=" << c.g << ", b=" << c.b << "}";
+}
 
 class RgbhslRoundTrip : public ::testing::TestWithParam<RgbColor> {};
 

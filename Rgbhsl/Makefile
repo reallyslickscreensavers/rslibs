@@ -1,6 +1,7 @@
-INCLUDE = -I..
-COMPILE = g++ $(INCLUDE) -std=c++14 -O3
-OBJECTS = Rgbhsl.o
+INCLUDE  = -I..
+CXX      ?= g++
+CXXFLAGS += -std=c++14 -O3
+OBJECTS  = Rgbhsl.o
 
 
 all: $(OBJECTS)
@@ -10,4 +11,4 @@ all: $(OBJECTS)
 .SUFFIXES: .cpp .o
 
 .cpp.o:
-	$(COMPILE) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<

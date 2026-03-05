@@ -149,22 +149,22 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 	switch (huezone)
 	{
 		case 0:
-			h = gg / 6.0f;
+			h = gg * kOneSixth;
 			break;
 		case 1:
-			h = ((1.0f - rr) / 6.0f) + kOneSixth;
+			h = (1.0f - rr) * kOneSixth + kOneSixth;
 			break;
 		case 2:
-			h = ((1.0f - gg) / 6.0f) + kOneHalf;
+			h = (1.0f - gg) * kOneSixth + kOneHalf;
 			break;
 		case 3:
-			h = (bb / 6.0f) + kOneThird;
+			h = bb * kOneSixth + kOneThird;
 			break;
 		case 4:
-			h = (rr / 6.0f) + kTwoThirds;
+			h = rr * kOneSixth + kTwoThirds;
 			break;
 		default:
-			h = ((1.0f - bb) / 6.0f) + kFiveSixths;
+			h = (1.0f - bb) * kOneSixth + kFiveSixths;
 	}
 }
 
