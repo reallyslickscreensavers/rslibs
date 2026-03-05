@@ -56,7 +56,6 @@
 // The following globals are defined in rsWin32Saver.cpp
 extern HINSTANCE mainInstance;
 extern HWND mainWindow;
-extern int checkingPassword;  // A saver should check this and stop drawing if true
 extern int isSuspended;  // power save mode
 extern int doingPreview;  // Previews take extra long to initialize because Windows
 // has lots of screwy resource hogging problems.  It's good to check this so that you
