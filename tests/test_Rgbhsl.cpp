@@ -225,16 +225,17 @@ TEST(Rgbhsl, NearZeroLuminosity) {
     EXPECT_NEAR(h, 0.0f, kEps);
 }
 
-TEST(Rgbhsl, GrayscaleRoundTrip) {
+TEST(Rgbhsl, MidGraySafety) {
     float h, s, l, r, g, b;
     rgb2hsl(0.5f, 0.5f, 0.5f, h, s, l);
     EXPECT_TRUE(std::isfinite(h));
     EXPECT_TRUE(std::isfinite(s));
     EXPECT_TRUE(std::isfinite(l));
     EXPECT_NEAR(l, 0.5f, kEps);
-    // Note: this HSL model does not treat (0.5,0.5,0.5) as achromatic
-    // (s = 1 - minChannel = 0.5), so the round-trip produces a tinted color.
-    // We only verify finite, in-range output to confirm no division-by-zero.
+    // This HSL model computes s = 1 - minChannel, so equal-channel grays
+    // (other than black/white) have non-zero saturation and do NOT round-trip
+    // to the original RGB values.  This test only verifies finite, in-range
+    // output to confirm no division-by-zero on a mid-gray input.
     hsl2rgb(h, s, l, r, g, b);
     EXPECT_TRUE(std::isfinite(r));
     EXPECT_TRUE(std::isfinite(g));
