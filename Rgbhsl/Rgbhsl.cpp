@@ -20,10 +20,17 @@
 
 #include "Rgbhsl.h"
 
-#include <math.h>
+#include <cmath>
+
+static constexpr float kEpsilon    = 1e-7f;
+static constexpr float kOneSixth   = 1.0f / 6.0f;
+static constexpr float kOneThird   = 1.0f / 3.0f;
+static constexpr float kOneHalf    = 0.5f;
+static constexpr float kTwoThirds  = 2.0f / 3.0f;
+static constexpr float kFiveSixths = 5.0f / 6.0f;
 
 void
-rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
+rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 {
 	int huezone = 0;
 	float rr, gg, bb;
@@ -75,10 +82,10 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 			rr = r / l;
 			gg = g / l;
 	}
-	if (l == 0.0)
+	if (l < kEpsilon)
 	{
-		h = 0.0;
-		s = 1.0;
+		h = 0.0f;
+		s = 1.0f;
 		return;
 	}
 
@@ -88,6 +95,7 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 		case 0:
 		case 1:
 			s = 1.0f - b;
+			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
 			bb = 0.0f;
 			rr = 1.0f - ((1.0f - rr) / s);
 			gg = 1.0f - ((1.0f - gg) / s);
@@ -95,12 +103,14 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 		case 2:
 		case 3:
 			s = 1.0f - r;
+			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
 			rr = 0.0f;
 			gg = 1.0f - ((1.0f - gg) / s);
 			bb = 1.0f - ((1.0f - bb) / s);
 			break;
 		default:
 			s = 1.0f - g;
+			if (s < kEpsilon) { s = 0.0f; h = 0.0f; return; }
 			gg = 0.0f;
 			rr = 1.0f - ((1.0f - rr) / s);
 			bb = 1.0f - ((1.0f - bb) / s);
@@ -113,70 +123,70 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 			h = g / 6.0f;
 			break;
 		case 1:
-			h = ((1.0f - r) / 6.0f) + 0.166667f;
+			h = ((1.0f - r) / 6.0f) + kOneSixth;
 			break;
 		case 2:
-			h = (b / 6.0f) + 0.333333f;
+			h = (b / 6.0f) + kOneThird;
 			break;
 		case 3:
-			h = ((1.0f - g) / 6.0f) + 0.5f;
+			h = ((1.0f - g) / 6.0f) + kOneHalf;
 			break;
 		case 4:
-			h = (r / 6.0f) + 0.666667f;
+			h = (r / 6.0f) + kTwoThirds;
 			break;
 		default:
-			h = ((1.0f - b) / 6.0f) + 0.833333f;
+			h = ((1.0f - b) / 6.0f) + kFiveSixths;
 	}
 }
 
 void
-hsl2rgb(float h, float s, float l, float &r, float &g, float &b)
+hsl2rgb(float h, float s, float l, float &r, float &g, float &b) noexcept
 {
 	// hue influence
-	h = fmodf(h, 1.0f);
-	if (h < 0.166667)
+	h = std::fmod(h, 1.0f);
+	if (h < kOneSixth)
 	{  // full red, some green
-		r = 1.0;
+		r = 1.0f;
 		g = h * 6.0f;
-		b = 0.0;
+		b = 0.0f;
 	}
 	else
 	{
-		if (h < 0.5)
+		if (h < kOneHalf)
 		{  // full green
-			g = 1.0;
-			if (h < 0.333333)
+			g = 1.0f;
+			if (h < kOneThird)
 			{  // some red
-				r = 1.0f - ((h - 0.166667f) * 6.0f);
-				b = 0.0;
+				r = 1.0f - ((h - kOneSixth) * 6.0f);
+				b = 0.0f;
 			}
 			else
 			{  // some blue
-				b = (h - 0.333333f) * 6.0f;
-				r = 0.0;
+				b = (h - kOneThird) * 6.0f;
+				r = 0.0f;
 			}
 		}
 		else
 		{
-			if (h < 0.833333)
+			if (h < kFiveSixths)
 			{  // full blue
-				b = 1.0;
-				if (h < 0.666667)
+				b = 1.0f;
+				if (h < kTwoThirds)
 				{  // some green
-					g = 1.0f - ((h - 0.5f) * 6.0f);
-					r = 0.0;
+					g = 1.0f - ((h - kOneHalf) * 6.0f);
+					r = 0.0f;
 				}
 				else
 				{  // some red
-					r = (h - 0.666667f) * 6.0f;
-					g = 0.0;
+					r = (h - kTwoThirds) * 6.0f;
+					g = 0.0f;
 				}
 			}
 			else
 			{  // full red, some blue
-				r = 1.0;
-				b = 1.0f - ((h - 0.833333f) * 6.0f);
-				g = 0.0;
+				r = 1.0f;
+				b = 1.0f - ((h - kFiveSixths) * 6.0f);
+				g = 0.0f;
 			}
 		}
 	}
@@ -195,7 +205,7 @@ hsl2rgb(float h, float s, float l, float &r, float &g, float &b)
 void
 hslTween(float h1, float s1, float l1,
 	float h2, float s2, float l2, float tween, int direction,
-	float &outh, float &outs, float &outl)
+	float &outh, float &outs, float &outl) noexcept
 {
 	// hue
 	if (!direction)
@@ -205,8 +215,8 @@ hslTween(float h1, float s1, float l1,
 		else
 		{
 			outh = h1 + (tween * (1.0f - (h1 - h2)));
-			if (outh > 1.0)
-				outh -= 1.0;
+			if (outh > 1.0f)
+				outh -= 1.0f;
 		}
 	}
 	else
@@ -216,8 +226,8 @@ hslTween(float h1, float s1, float l1,
 		else
 		{
 			outh = h1 - (tween * (1.0f - (h2 - h1)));
-			if (outh < 0.0)
-				outh += 1.0;
+			if (outh < 0.0f)
+				outh += 1.0f;
 		}
 	}
 
@@ -231,7 +241,7 @@ hslTween(float h1, float s1, float l1,
 void
 rgbTween(float r1, float g1, float b1,
 	float r2, float g2, float b2, float tween, int direction,
-	float &outr, float &outg, float &outb)
+	float &outr, float &outg, float &outb) noexcept
 {
 	float h1, s1, l1, h2, s2, l2, outh, outs, outl;
 
