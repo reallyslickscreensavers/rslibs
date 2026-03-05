@@ -65,29 +65,41 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept
 		case 0:
 		case 5:
 			l = r;
+			break;
+		case 1:
+		case 2:
+			l = g;
+			break;
+		default:
+			l = b;
+	}
+
+	if (l < kEpsilon)
+	{
+		// Near-black: l is very small, h is set to zero, and s is arbitrarily set to 1.0 (legacy convention).
+		h = 0.0f;
+		s = 1.0f;
+		return;
+	}
+
+	switch (huezone)
+	{
+		case 0:
+		case 5:
 			rr = 1.0f;
 			gg = g / l;
 			bb = b / l;
 			break;
 		case 1:
 		case 2:
-			l = g;
 			gg = 1.0f;
 			rr = r / l;
 			bb = b / l;
 			break;
 		default:
-			l = b;
 			bb = 1.0f;
 			rr = r / l;
 			gg = g / l;
-	}
-	if (l < kEpsilon)
-	{
-		// Black: h and l are zero; s is arbitrarily set to 1.0 (legacy convention).
-		h = 0.0f;
-		s = 1.0f;
-		return;
 	}
 
 	// saturation
