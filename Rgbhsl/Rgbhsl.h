@@ -27,9 +27,9 @@
 #ifndef RGBHSL_H
 #define RGBHSL_H
 
-void rgb2hsl(float r, float g, float b, float &h, float &s, float &l);
+void rgb2hsl(float r, float g, float b, float &h, float &s, float &l) noexcept;
 
-void hsl2rgb(float h, float s, float l, float &r, float &g, float &b);
+void hsl2rgb(float h, float s, float l, float &r, float &g, float &b) noexcept;
 
 // For these 'tween functions, a tween value of 0.0 will output the first
 // color while a tween value of 1.0 will output the second color.
@@ -38,10 +38,10 @@ void hsl2rgb(float h, float s, float l, float &r, float &g, float &b);
 // 1 does the opposite.
 void hslTween(float h1, float s1, float l1,
 	float h2, float s2, float l2, float tween, int direction,
-	float &outh, float &outs, float &outl);
+	float &outh, float &outs, float &outl) noexcept;
 
 void rgbTween(float r1, float g1, float b1,
 	float r2, float g2, float b2, float tween, int direction,
-	float &outr, float &outg, float &outb);
+	float &outr, float &outg, float &outb) noexcept;
 
 #endif // RGBHSL_H

@@ -210,3 +210,62 @@ TEST(Rgbhsl, Grayscale) {
     rgb2hsl(0.0f, 0.0f, 0.0f, h, s, l);
     EXPECT_NEAR(l, 0.0f, kEps);
 }
+
+// ---------------------------------------------------------------------------
+// Division-by-zero guard and additional round-trip tests
+// ---------------------------------------------------------------------------
+
+TEST(Rgbhsl, NearZeroLuminosity) {
+    float h, s, l;
+    rgb2hsl(1e-8f, 1e-8f, 1e-8f, h, s, l);
+    EXPECT_TRUE(std::isfinite(h));
+    EXPECT_TRUE(std::isfinite(s));
+    EXPECT_TRUE(std::isfinite(l));
+    EXPECT_NEAR(l, 0.0f, kEps);
+    EXPECT_NEAR(h, 0.0f, kEps);
+}
+
+TEST(Rgbhsl, GrayscaleRoundTrip) {
+    float h, s, l, r, g, b;
+    rgb2hsl(0.5f, 0.5f, 0.5f, h, s, l);
+    EXPECT_TRUE(std::isfinite(h));
+    EXPECT_TRUE(std::isfinite(s));
+    EXPECT_TRUE(std::isfinite(l));
+    EXPECT_NEAR(l, 0.5f, kEps);
+    hsl2rgb(h, s, l, r, g, b);
+    EXPECT_TRUE(std::isfinite(r));
+    EXPECT_TRUE(std::isfinite(g));
+    EXPECT_TRUE(std::isfinite(b));
+    EXPECT_GE(r, 0.0f);
+    EXPECT_LE(r, 1.0f);
+    EXPECT_GE(g, 0.0f);
+    EXPECT_LE(g, 1.0f);
+    EXPECT_GE(b, 0.0f);
+    EXPECT_LE(b, 1.0f);
+}
+
+struct RgbColor {
+    float r, g, b;
+};
+
+class RgbhslRoundTrip : public ::testing::TestWithParam<RgbColor> {};
+
+TEST_P(RgbhslRoundTrip, AllPrimarySecondaryRoundTrip) {
+    auto [r0, g0, b0] = GetParam();
+    float h, s, l, r, g, b;
+    rgb2hsl(r0, g0, b0, h, s, l);
+    hsl2rgb(h, s, l, r, g, b);
+    EXPECT_NEAR(r, r0, kEps);
+    EXPECT_NEAR(g, g0, kEps);
+    EXPECT_NEAR(b, b0, kEps);
+}
+
+INSTANTIATE_TEST_SUITE_P(PrimarySecondary, RgbhslRoundTrip,
+    ::testing::Values(
+        RgbColor{1.0f, 0.0f, 0.0f},  // Red
+        RgbColor{0.0f, 1.0f, 0.0f},  // Green
+        RgbColor{0.0f, 0.0f, 1.0f},  // Blue
+        RgbColor{0.0f, 1.0f, 1.0f},  // Cyan
+        RgbColor{1.0f, 0.0f, 1.0f},  // Magenta
+        RgbColor{1.0f, 1.0f, 0.0f}   // Yellow
+    ));
