@@ -232,6 +232,9 @@ TEST(Rgbhsl, GrayscaleRoundTrip) {
     EXPECT_TRUE(std::isfinite(s));
     EXPECT_TRUE(std::isfinite(l));
     EXPECT_NEAR(l, 0.5f, kEps);
+    // Note: this HSL model does not treat (0.5,0.5,0.5) as achromatic
+    // (s = 1 - minChannel = 0.5), so the round-trip produces a tinted color.
+    // We only verify finite, in-range output to confirm no division-by-zero.
     hsl2rgb(h, s, l, r, g, b);
     EXPECT_TRUE(std::isfinite(r));
     EXPECT_TRUE(std::isfinite(g));
