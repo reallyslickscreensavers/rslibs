@@ -33,6 +33,7 @@ void
 rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 {
 	int huezone = 0;
+	float rr, gg, bb;
 
 	// find huezone
 	if (r >= g)
@@ -81,59 +82,89 @@ rgb2hsl(float r, float g, float b, float &h, float &s, float &l)
 		return;
 	}
 
+	// Normalize channels by luminosity so hue/saturation do not depend on brightness.
+	switch (huezone)
+	{
+		case 0:
+		case 5:
+			rr = 1.0f;
+			gg = g / l;
+			bb = b / l;
+			break;
+		case 1:
+		case 3:
+			gg = 1.0f;
+			rr = r / l;
+			bb = b / l;
+			break;
+		default:
+			bb = 1.0f;
+			rr = r / l;
+			gg = g / l;
+	}
+
 	// saturation
 	switch (huezone)
 	{
 		case 0:
 		case 1:
-			s = 1.0f - b;
+			s = 1.0f - bb;
 			if (s < kEpsilon)
 			{
 				s = 0.0f;
 				h = 0.0f;
 				return;
 			}
+			bb = 0.0f;
+			rr = 1.0f - ((1.0f - rr) / s);
+			gg = 1.0f - ((1.0f - gg) / s);
 			break;
 		case 2:
 		case 3:
-			s = 1.0f - r;
+			s = 1.0f - rr;
 			if (s < kEpsilon)
 			{
 				s = 0.0f;
 				h = 0.0f;
 				return;
 			}
+			rr = 0.0f;
+			gg = 1.0f - ((1.0f - gg) / s);
+			bb = 1.0f - ((1.0f - bb) / s);
 			break;
 		default:
-			s = 1.0f - g;
+			s = 1.0f - gg;
 			if (s < kEpsilon)
 			{
 				s = 0.0f;
 				h = 0.0f;
 				return;
 			}
+			gg = 0.0f;
+			rr = 1.0f - ((1.0f - rr) / s);
+			bb = 1.0f - ((1.0f - bb) / s);
 	}
 
 	// hue
 	switch (huezone)
 	{
 		case 0:
-			h = g / 6.0f;
+			h = gg / 6.0f;
 			break;
 		case 1:
-			h = ((1.0f - r) / 6.0f) + kOneSixth;
+			h = ((1.0f - rr) / 6.0f) + kOneSixth;
 			break;
 		case 2:
-			h = (b / 6.0f) + kOneThird;
+			h = (bb / 6.0f) + kOneThird;
 			break;
 		case 3:
-			h = ((1.0f - g) / 6.0f) + kOneHalf;
+			h = ((1.0f - gg) / 6.0f) + kOneHalf;
 			break;
 		case 4:
-			h = (r / 6.0f) + kTwoThirds;
+			h = (rr / 6.0f) + kTwoThirds;
 			break;
 		default:
-			h = ((1.0f - b) / 6.0f) + kFiveSixths;
+			h = ((1.0f - bb) / 6.0f) + kFiveSixths;
 	}
 }
 

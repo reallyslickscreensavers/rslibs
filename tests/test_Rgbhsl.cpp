@@ -255,10 +255,7 @@ TEST(Rgbhsl, MidGraySafety) {
     EXPECT_TRUE(std::isfinite(s));
     EXPECT_TRUE(std::isfinite(l));
     EXPECT_NEAR(l, 0.5f, kEps);
-    // This HSL model computes s = 1 - minChannel, so equal-channel grays
-    // (other than black/white) have non-zero saturation and do NOT round-trip
-    // to the original RGB values.  This test only verifies finite, in-range
-    // output to confirm no division-by-zero on a mid-gray input.
+    // Mid-gray should remain stable and finite through a round-trip conversion.
     hsl2rgb(h, s, l, r, g, b);
     EXPECT_TRUE(std::isfinite(r));
     EXPECT_TRUE(std::isfinite(g));
@@ -269,6 +266,9 @@ TEST(Rgbhsl, MidGraySafety) {
     EXPECT_LE(g, 1.0f + kEps);
     EXPECT_GE(b, -kEps);
     EXPECT_LE(b, 1.0f + kEps);
+    EXPECT_NEAR(r, 0.5f, kEps);
+    EXPECT_NEAR(g, 0.5f, kEps);
+    EXPECT_NEAR(b, 0.5f, kEps);
 }
 
 TEST(Rgbhsl, BlueDominantPreservesBlueLuminosityOnRoundTrip) {
@@ -323,5 +323,6 @@ INSTANTIATE_TEST_SUITE_P(PrimarySecondary, RgbhslRoundTrip,
         RgbColor{0.0f, 0.0f, 1.0f},  // Blue
         RgbColor{0.0f, 1.0f, 1.0f},  // Cyan
         RgbColor{1.0f, 0.0f, 1.0f},  // Magenta
-        RgbColor{1.0f, 1.0f, 0.0f}   // Yellow
+        RgbColor{1.0f, 1.0f, 0.0f},  // Yellow
+        RgbColor{0.6f, 0.0f, 0.3f}   // Dim magenta (max < 1.0)
     ));
