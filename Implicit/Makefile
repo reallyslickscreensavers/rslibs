@@ -1,6 +1,8 @@
-INCLUDE = -I..
-COMPILE = g++ $(INCLUDE) -O3 -DGL_GLEXT_PROTOTYPES -msse -mfpmath=sse
-OBJECTS = impCubeTables.o \
+INCLUDE  = -I..
+CXX      ?= g++
+CXXFLAGS ?= -std=c++14 -O3 -msse -mfpmath=sse
+CPPFLAGS ?= -DGL_GLEXT_PROTOTYPES
+OBJECTS  = impCubeTables.o \
 	impCubeVolume.o \
 	impSurface.o \
 	impShape.o \
@@ -23,4 +25,4 @@ clean:
 .SUFFIXES: .cpp .o
 
 .cpp.o:
-	$(COMPILE) -o $@ -c $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
