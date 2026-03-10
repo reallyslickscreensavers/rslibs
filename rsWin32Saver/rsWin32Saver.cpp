@@ -348,7 +348,6 @@ startScreenSaver(HWND parent)
 
 		// variables for limiting frame rate
 		float desiredTimeStep = 0.0f;
-		float timeRemaining = 0.0f;
 		rsTimer timer;
 		if (dFrameRateLimit)
 			desiredTimeStep = 1.0f / float(dFrameRateLimit);
