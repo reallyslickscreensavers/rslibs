@@ -363,7 +363,7 @@ startScreenSaver(HWND parent)
 
 				if (dFrameRateLimit)
 				{  // frame rate is limited
-					timer.wait(1.0f / float(dFrameRateLimit));
+					timer.wait(desiredTimeStep);
 					idleProc();  // do idle processing (i.e. draw frames)
 					Sleep(0);
 				}
