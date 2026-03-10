@@ -178,7 +178,7 @@ WINAPI realScreenSaverProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 //-----------------------------------------------------------------------
-// Choose the best pixel format possible, giving preference to harware
+// Choose the best pixel format possible, giving preference to hardware
 // accelerated modes.
 
 void
@@ -348,7 +348,6 @@ startScreenSaver(HWND parent)
 
 		// variables for limiting frame rate
 		float desiredTimeStep = 0.0f;
-		float timeRemaining = 0.0f;
 		rsTimer timer;
 		if (dFrameRateLimit)
 			desiredTimeStep = 1.0f / float(dFrameRateLimit);
@@ -363,7 +362,7 @@ startScreenSaver(HWND parent)
 
 				if (dFrameRateLimit)
 				{  // frame rate is limited
-					timer.wait(1.0f / float(dFrameRateLimit));
+					timer.wait(desiredTimeStep);
 					idleProc();  // do idle processing (i.e. draw frames)
 					Sleep(0);
 				}
