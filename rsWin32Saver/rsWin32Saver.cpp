@@ -178,7 +178,7 @@ WINAPI realScreenSaverProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 //-----------------------------------------------------------------------
-// Choose the best pixel format possible, giving preference to harware
+// Choose the best pixel format possible, giving preference to hardware
 // accelerated modes.
 
 void
