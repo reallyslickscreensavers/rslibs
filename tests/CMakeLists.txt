@@ -50,6 +50,7 @@ add_executable(rslibs_tests
     test_rsTrigonometry.cpp
     test_Rgbhsl.cpp
     test_Implicit.cpp
+    test_rsUtility.cpp
     ${RSMATH_SOURCES}
     ${RGBHSL_SOURCES}
     ${IMPLICIT_SOURCES}
