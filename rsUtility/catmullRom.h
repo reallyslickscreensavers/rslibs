@@ -37,8 +37,9 @@ inline float catmullRom(float p0, float p1, float p2, float p3, float t){
 }
 
 // Ensure pt is at least minDist away from prev.
-// If distance is zero, uses fallback direction (minDist, 0, 0).
-// If distance is nonzero but less than minDist, scales offset to minDist.
+// If distance is effectively zero (distSq < (1e-8f)^2), uses fallback
+// direction (minDist, 0, 0) relative to prev. If distance is positive but less
+// than minDist, scales the existing offset to have length minDist.
 inline void ensureMinDist(float* pt, const float* prev, float minDist){
 	if(pt == nullptr || prev == nullptr || minDist <= 0.0f || !std::isfinite(minDist))
 		return;
@@ -57,7 +58,7 @@ inline void ensureMinDist(float* pt, const float* prev, float minDist){
 	const float kZeroOffsetDist = 1e-8f;
 	const float kZeroOffsetDistSq = kZeroOffsetDist * kZeroOffsetDist;
 	if(distSq < kZeroOffsetDistSq){
-		// Zero offset - use fallback direction
+		// Zero (or near-zero) offset - use fallback direction
 		pt[0] = prev[0] + minDist;
 		pt[1] = prev[1];
 		pt[2] = prev[2];

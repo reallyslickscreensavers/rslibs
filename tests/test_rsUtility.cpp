@@ -194,13 +194,13 @@ TEST(EnsureMinDist, NonFiniteMinDistNoOp) {
 }
 
 TEST(EnsureMinDist, NearZeroBoundary) {
-    // Below threshold: use fallback (+X) and reset Y/Z to prev.
-    float prevA[3] = {1.0f, 10.0f, -5.0f};
-    float ptA[3] = {1.0f + 5e-9f, 10.0f + 2.5e-9f, -5.0f};
+    // Below threshold: use a representable nonzero offset near 0, and fallback.
+    float prevA[3] = {0.0f, 0.0f, 0.0f};
+    float ptA[3] = {std::nextafter(0.0f, 1.0f), std::nextafter(0.0f, 1.0f), 0.0f};
     ensureMinDist(ptA, prevA, 2.0f);
-    EXPECT_NEAR(ptA[0], 3.0f, kEps);
-    EXPECT_NEAR(ptA[1], 10.0f, kEps);
-    EXPECT_NEAR(ptA[2], -5.0f, kEps);
+    EXPECT_NEAR(ptA[0], 2.0f, kEps);
+    EXPECT_NEAR(ptA[1], 0.0f, kEps);
+    EXPECT_NEAR(ptA[2], 0.0f, kEps);
 
     // Above threshold: scale while preserving direction.
     float prevB[3] = {0.0f, 0.0f, 0.0f};
