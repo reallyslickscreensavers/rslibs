@@ -536,10 +536,10 @@ WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow)
 void
 initFrameRateLimitSlider(HWND hdlg, int sliderID, int textID)
 {
-	SendDlgItemMessage(hdlg, sliderID, TBM_SETRANGE, 0, LPARAM(MAKELONG(DWORD(0), DWORD(120))));
+	SendDlgItemMessage(hdlg, sliderID, TBM_SETRANGE, 0, LPARAM(MAKELONG(DWORD(0), DWORD(1000))));
 	SendDlgItemMessage(hdlg, sliderID, TBM_SETPOS, 1, LPARAM(dFrameRateLimit));
 	SendDlgItemMessage(hdlg, sliderID, TBM_SETLINESIZE, 0, LPARAM(1));
-	SendDlgItemMessage(hdlg, sliderID, TBM_SETPAGESIZE, 0, LPARAM(10));
+	SendDlgItemMessage(hdlg, sliderID, TBM_SETPAGESIZE, 0, LPARAM(50));
 	char cval[16];
 	sprintf_s(cval, "%d", dFrameRateLimit);
 	SendDlgItemMessage(hdlg, textID, WM_SETTEXT, 0, LPARAM(cval));
