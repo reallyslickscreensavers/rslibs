@@ -30,32 +30,7 @@
 #include "impSurface.h"
 #include "impCubeTables.h"
 #include "impCrawlPoint.h"
-
-
-struct cubedata
-{
-	// corner mask which describes how cube is polygonized
-	unsigned int mask;
-	// position left-lower-far corner (-x, -y, -z)
-	float x;
-	float y;
-	float z;
-#ifdef __SSE__
-	float w;  // must have a 1.0f here for SSE dot product computations
-#endif
-	// field value at this corner
-	float value;
-	// edge vertex indices for surfaces
-	unsigned int x_vertex_index;
-	unsigned int y_vertex_index;
-	unsigned int z_vertex_index;
-	// done flags
-	unsigned short cube_frame;
-	unsigned short corner_frame;
-	unsigned short x_vertex_frame;
-	unsigned short y_vertex_frame;
-	unsigned short z_vertex_frame;
-};
+#include "impCubeData.h"
 
 
 // For making a list of cubes to be polygonized.

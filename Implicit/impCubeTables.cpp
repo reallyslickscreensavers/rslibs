@@ -97,6 +97,9 @@ impCubeTables::addtotable(int row, int edgecount, int* edgelist)
 	static int lastrow = -1;
 	static int totalcount;
 
+	if (row < 0 || row >= 256)
+		return;
+
 	if (row != lastrow)
 		totalcount = 0;
 

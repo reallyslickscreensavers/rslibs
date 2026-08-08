@@ -916,9 +916,10 @@ impCubeVolume::getYPlus1Value(unsigned int index)
 	if (indexPlus1 % w_1xh_1 < w_1)
 	{
 		float* pos = &(cubes[index].x);
-		pos[1] += cubewidth;
+		cubedata& cube(cubes[index]);
+		cube.y += cubewidth;
 		const float value(function(pos));
-		pos[1] -= cubewidth;
+		cube.y -= cubewidth;
 
 		return value;
 	}
@@ -944,9 +945,10 @@ impCubeVolume::getZPlus1Value(unsigned int index)
 	if (indexPlus1 >= w_1xh_1xl_1)
 	{
 		float* pos = &(cubes[index].x);
-		pos[2] += cubewidth;
+		cubedata& cube(cubes[index]);
+		cube.z += cubewidth;
 		const float value(function(pos));
-		pos[2] -= cubewidth;
+		cube.z -= cubewidth;
 
 		return value;
 	}

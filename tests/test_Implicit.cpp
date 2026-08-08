@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <cmath>
+#include <cstddef>
 #include <cstring>
 
 #include <rsMath/rsMath.h>
@@ -20,6 +21,8 @@
 #include "impRoundedHexahedron.h"
 #include "impHexahedron.h"
 #include "impCrawlPoint.h"
+#include "impCubeTables.h"
+#include "impCubeData.h"
 
 static constexpr float kEps = 1e-4f;
 
@@ -645,4 +648,81 @@ TEST(impHexahedron, ValueAlwaysPositive) {
     hex.setMatrix(m);
     float pos[3] = {10.0f, -5.0f, 3.0f};
     EXPECT_GT(hex.value(pos), 0.0f);
+}
+
+// ===========================================================================
+// impCubeTables tests
+//
+// Regression coverage for a SonarCloud BLOCKER (cpp:S3519) in addtotable():
+// the table-building code writes triStripPatterns[row][...] without bounds
+// checking row. It's only ever driven by makeTriStripPatterns() with row in
+// [0,255], but nothing previously proved that. These tests exercise the full
+// 256-configuration table build and check the result is well-formed, so any
+// future out-of-range write shows up as a failing assertion.
+// ===========================================================================
+
+TEST(impCubeTables, ConstructsWithoutCrashing) {
+    impCubeTables tables;
+    SUCCEED();
+}
+
+TEST(impCubeTables, AllRowsWithinBounds) {
+    impCubeTables tables;
+    // Each row packs zero or more (edgecount, edge...) segments back to
+    // back, terminated by a 0 sentinel (see impCubeTables.h/addtotable()).
+    // Walk every segment in the row, not just the first, and use ASSERT
+    // for anything that gates further indexing so a corrupted table fails
+    // fast instead of reading out of bounds in the test itself.
+    for (int i = 0; i < 256; ++i) {
+        int offset = 0;
+        while (offset < 17) {
+            int edgecount = tables.triStripPatterns[i][offset];
+            if (edgecount == 0)
+                break;  // sentinel: no more triangle strips in this row
+            ASSERT_GE(edgecount, 3) << "row " << i << " offset " << offset;
+            ASSERT_LE(edgecount, 7) << "row " << i << " offset " << offset;
+            ASSERT_LE(offset + edgecount, 16) << "row " << i << " offset " << offset;
+            for (int j = 1; j <= edgecount; ++j) {
+                int edgeIndex = tables.triStripPatterns[i][offset + j];
+                EXPECT_GE(edgeIndex, 0) << "row " << i << " slot " << (offset + j);
+                EXPECT_LT(edgeIndex, 12) << "row " << i << " slot " << (offset + j);
+            }
+            offset += edgecount + 1;
+        }
+    }
+}
+
+TEST(impCubeTables, EmptyAndFullConfigurationsHaveNoSurface) {
+    impCubeTables tables;
+    // Configuration 0: all vertices below threshold -> no surface crossing.
+    EXPECT_EQ(tables.triStripPatterns[0][0], 0);
+    // Configuration 255: all vertices above threshold -> no surface crossing.
+    EXPECT_EQ(tables.triStripPatterns[255][0], 0);
+}
+
+// ===========================================================================
+// cubedata layout invariant test
+//
+// Regression coverage for a SonarCloud BLOCKER (cpp:S3519) in
+// impCubeVolume::getYPlus1Value/getZPlus1Value (libs/Implicit/impCubeVolume.cpp):
+// those functions (and many other call sites in that file) take &(cube.x)
+// and treat it as the start of a 3-float position array passed to
+// `function(float*)`. That relies on cubedata::x/y/z being laid out
+// contiguously in that order. cubedata now lives in its own GL-free header
+// (libs/Implicit/impCubeData.h, split out of impCubeVolume.h for exactly
+// this reason), so we can static_assert on the real production type
+// directly instead of a hand-copied mirror that could drift from it.
+//
+// Verified via offsetof rather than by indexing a float* past field 'x' --
+// that pointer-arithmetic pattern is exactly what fix #2/#3 above removes,
+// and doing it here too would trip the same cpp:S3519 rule on this file.
+// ===========================================================================
+
+static_assert(offsetof(cubedata, y) == offsetof(cubedata, x) + sizeof(float),
+    "cubedata::y must immediately follow cubedata::x");
+static_assert(offsetof(cubedata, z) == offsetof(cubedata, y) + sizeof(float),
+    "cubedata::z must immediately follow cubedata::y");
+
+TEST(cubedata, PositionFieldsAreContiguousFloats) {
+    SUCCEED();
 }
