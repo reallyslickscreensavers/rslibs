@@ -22,10 +22,10 @@ jobs:
         configuration: [Debug, Release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
 
       - name: Build solution (${{ matrix.configuration }})
         run: msbuild rslibs.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=x86
@@ -59,7 +59,7 @@ jobs:
       pull-requests: write    # Required to post test result comments on the PR
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install dependencies
         run: |
@@ -80,7 +80,7 @@ jobs:
         run: ctest --test-dir tests/build --output-on-failure --output-junit test-results.xml
 
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         if: always() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           files: tests/build/test-results.xml
