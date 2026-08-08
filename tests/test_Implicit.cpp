@@ -20,6 +20,7 @@
 #include "impRoundedHexahedron.h"
 #include "impHexahedron.h"
 #include "impCrawlPoint.h"
+#include "impCubeTables.h"
 
 static constexpr float kEps = 1e-4f;
 
@@ -645,4 +646,81 @@ TEST(impHexahedron, ValueAlwaysPositive) {
     hex.setMatrix(m);
     float pos[3] = {10.0f, -5.0f, 3.0f};
     EXPECT_GT(hex.value(pos), 0.0f);
+}
+
+// ===========================================================================
+// impCubeTables tests
+//
+// Regression coverage for a SonarCloud BLOCKER (cpp:S3519) in addtotable():
+// the table-building code writes triStripPatterns[row][...] without bounds
+// checking row. It's only ever driven by makeTriStripPatterns() with row in
+// [0,255], but nothing previously proved that. These tests exercise the full
+// 256-configuration table build and check the result is well-formed, so any
+// future out-of-range write shows up as a failing assertion.
+// ===========================================================================
+
+TEST(impCubeTables, ConstructsWithoutCrashing) {
+    impCubeTables tables;
+    SUCCEED();
+}
+
+TEST(impCubeTables, AllRowsWithinBounds) {
+    impCubeTables tables;
+    for (int i = 0; i < 256; ++i) {
+        int edgecount = tables.triStripPatterns[i][0];
+        // A row either has no triangle strip (0) or one with 3-7 vertices.
+        EXPECT_TRUE(edgecount == 0 || (edgecount >= 3 && edgecount <= 7))
+            << "row " << i << " edgecount " << edgecount;
+        for (int j = 1; j <= edgecount; ++j) {
+            int edgeIndex = tables.triStripPatterns[i][j];
+            EXPECT_GE(edgeIndex, 0) << "row " << i << " slot " << j;
+            EXPECT_LT(edgeIndex, 12) << "row " << i << " slot " << j;
+        }
+    }
+}
+
+TEST(impCubeTables, EmptyAndFullConfigurationsHaveNoSurface) {
+    impCubeTables tables;
+    // Configuration 0: all vertices below threshold -> no surface crossing.
+    EXPECT_EQ(tables.triStripPatterns[0][0], 0);
+    // Configuration 255: all vertices above threshold -> no surface crossing.
+    EXPECT_EQ(tables.triStripPatterns[255][0], 0);
+}
+
+// ===========================================================================
+// cubedata layout invariant test
+//
+// Regression coverage for a SonarCloud BLOCKER (cpp:S3519) in
+// impCubeVolume::getYPlus1Value/getZPlus1Value (libs/Implicit/impCubeVolume.cpp):
+// those functions (and many other call sites in that file) take &(cube.x)
+// and treat it as the start of a 3-float position array passed to
+// `function(float*)`. That relies on cubedata::x/y/z (declared in
+// libs/Implicit/impCubeVolume.h) being laid out contiguously in that order.
+//
+// impCubeVolume.h can't be included here: it pulls in impSurface.h, which
+// requires <GL/glext.h> from a submodule of the *parent* repository that
+// isn't available when this library is built standalone (impSurface's
+// constructor also calls live OpenGL functions and needs a real GL context,
+// which is why impSurface/impCubeVolume are excluded from this test binary
+// entirely). So this test mirrors cubedata's leading field layout locally to
+// guard the general C++ object-layout assumption the fix relies on.
+// ===========================================================================
+
+struct cubedataLayoutMirror
+{
+    unsigned int mask;
+    float x;
+    float y;
+    float z;
+};
+
+TEST(cubedataLayoutMirror, PositionFieldsAreContiguousFloats) {
+    cubedataLayoutMirror c{};
+    c.x = 1.0f;
+    c.y = 2.0f;
+    c.z = 3.0f;
+    float* pos = &c.x;
+    EXPECT_FLOAT_EQ(pos[0], c.x);
+    EXPECT_FLOAT_EQ(pos[1], c.y);
+    EXPECT_FLOAT_EQ(pos[2], c.z);
 }
