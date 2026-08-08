@@ -22,6 +22,7 @@
 #include "impHexahedron.h"
 #include "impCrawlPoint.h"
 #include "impCubeTables.h"
+#include "impCubeData.h"
 
 static constexpr float kEps = 1e-4f;
 
@@ -667,15 +668,26 @@ TEST(impCubeTables, ConstructsWithoutCrashing) {
 
 TEST(impCubeTables, AllRowsWithinBounds) {
     impCubeTables tables;
+    // Each row packs zero or more (edgecount, edge...) segments back to
+    // back, terminated by a 0 sentinel (see impCubeTables.h/addtotable()).
+    // Walk every segment in the row, not just the first, and use ASSERT
+    // for anything that gates further indexing so a corrupted table fails
+    // fast instead of reading out of bounds in the test itself.
     for (int i = 0; i < 256; ++i) {
-        int edgecount = tables.triStripPatterns[i][0];
-        // A row either has no triangle strip (0) or one with 3-7 vertices.
-        EXPECT_TRUE(edgecount == 0 || (edgecount >= 3 && edgecount <= 7))
-            << "row " << i << " edgecount " << edgecount;
-        for (int j = 1; j <= edgecount; ++j) {
-            int edgeIndex = tables.triStripPatterns[i][j];
-            EXPECT_GE(edgeIndex, 0) << "row " << i << " slot " << j;
-            EXPECT_LT(edgeIndex, 12) << "row " << i << " slot " << j;
+        int offset = 0;
+        while (offset < 17) {
+            int edgecount = tables.triStripPatterns[i][offset];
+            if (edgecount == 0)
+                break;  // sentinel: no more triangle strips in this row
+            ASSERT_GE(edgecount, 3) << "row " << i << " offset " << offset;
+            ASSERT_LE(edgecount, 7) << "row " << i << " offset " << offset;
+            ASSERT_LE(offset + edgecount, 16) << "row " << i << " offset " << offset;
+            for (int j = 1; j <= edgecount; ++j) {
+                int edgeIndex = tables.triStripPatterns[i][offset + j];
+                EXPECT_GE(edgeIndex, 0) << "row " << i << " slot " << (offset + j);
+                EXPECT_LT(edgeIndex, 12) << "row " << i << " slot " << (offset + j);
+            }
+            offset += edgecount + 1;
         }
     }
 }
@@ -695,34 +707,22 @@ TEST(impCubeTables, EmptyAndFullConfigurationsHaveNoSurface) {
 // impCubeVolume::getYPlus1Value/getZPlus1Value (libs/Implicit/impCubeVolume.cpp):
 // those functions (and many other call sites in that file) take &(cube.x)
 // and treat it as the start of a 3-float position array passed to
-// `function(float*)`. That relies on cubedata::x/y/z (declared in
-// libs/Implicit/impCubeVolume.h) being laid out contiguously in that order.
+// `function(float*)`. That relies on cubedata::x/y/z being laid out
+// contiguously in that order. cubedata now lives in its own GL-free header
+// (libs/Implicit/impCubeData.h, split out of impCubeVolume.h for exactly
+// this reason), so we can static_assert on the real production type
+// directly instead of a hand-copied mirror that could drift from it.
 //
-// impCubeVolume.h can't be included here: it pulls in impSurface.h, which
-// requires <GL/glext.h> from a submodule of the *parent* repository that
-// isn't available when this library is built standalone (impSurface's
-// constructor also calls live OpenGL functions and needs a real GL context,
-// which is why impSurface/impCubeVolume are excluded from this test binary
-// entirely). So this test mirrors cubedata's leading field layout locally to
-// guard the general C++ object-layout assumption the fix relies on.
-// ===========================================================================
-
-struct cubedataLayoutMirror
-{
-    unsigned int mask;
-    float x;
-    float y;
-    float z;
-};
-
 // Verified via offsetof rather than by indexing a float* past field 'x' --
 // that pointer-arithmetic pattern is exactly what fix #2/#3 above removes,
 // and doing it here too would trip the same cpp:S3519 rule on this file.
-static_assert(offsetof(cubedataLayoutMirror, y) == offsetof(cubedataLayoutMirror, x) + sizeof(float),
+// ===========================================================================
+
+static_assert(offsetof(cubedata, y) == offsetof(cubedata, x) + sizeof(float),
     "cubedata::y must immediately follow cubedata::x");
-static_assert(offsetof(cubedataLayoutMirror, z) == offsetof(cubedataLayoutMirror, y) + sizeof(float),
+static_assert(offsetof(cubedata, z) == offsetof(cubedata, y) + sizeof(float),
     "cubedata::z must immediately follow cubedata::y");
 
-TEST(cubedataLayoutMirror, PositionFieldsAreContiguousFloats) {
+TEST(cubedata, PositionFieldsAreContiguousFloats) {
     SUCCEED();
 }
