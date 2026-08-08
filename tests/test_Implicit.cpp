@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <cmath>
+#include <cstddef>
 #include <cstring>
 
 #include <rsMath/rsMath.h>
@@ -714,13 +715,14 @@ struct cubedataLayoutMirror
     float z;
 };
 
+// Verified via offsetof rather than by indexing a float* past field 'x' --
+// that pointer-arithmetic pattern is exactly what fix #2/#3 above removes,
+// and doing it here too would trip the same cpp:S3519 rule on this file.
+static_assert(offsetof(cubedataLayoutMirror, y) == offsetof(cubedataLayoutMirror, x) + sizeof(float),
+    "cubedata::y must immediately follow cubedata::x");
+static_assert(offsetof(cubedataLayoutMirror, z) == offsetof(cubedataLayoutMirror, y) + sizeof(float),
+    "cubedata::z must immediately follow cubedata::y");
+
 TEST(cubedataLayoutMirror, PositionFieldsAreContiguousFloats) {
-    cubedataLayoutMirror c{};
-    c.x = 1.0f;
-    c.y = 2.0f;
-    c.z = 3.0f;
-    float* pos = &c.x;
-    EXPECT_FLOAT_EQ(pos[0], c.x);
-    EXPECT_FLOAT_EQ(pos[1], c.y);
-    EXPECT_FLOAT_EQ(pos[2], c.z);
+    SUCCEED();
 }
