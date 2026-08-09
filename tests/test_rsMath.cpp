@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <array>
 #include <cmath>
 #include <sstream>
 #include <string>
@@ -882,14 +883,14 @@ TEST(rsMathUtils, RandiSingleValueRange) {
 TEST(rsMathUtils, RandiCoversItsWholeRange) {
     // Guards against a collapsed or constant engine: over 2000 draws every
     // bucket of a 4-wide range should come up at least once.
-    bool seen[4] = {false, false, false, false};
+    std::array<bool, 4> seen{};
     for (int i = 0; i < 2000; ++i) {
-        int val = rsRandi(4);
+        int val = rsRandi(static_cast<int>(seen.size()));
         ASSERT_GE(val, 0);
-        ASSERT_LT(val, 4);
+        ASSERT_LT(val, static_cast<int>(seen.size()));
         seen[val] = true;
     }
-    for (int i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < seen.size(); ++i) {
         EXPECT_TRUE(seen[i]) << "value " << i << " never produced";
     }
 }
