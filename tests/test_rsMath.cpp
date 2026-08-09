@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <array>
 #include <cmath>
 #include <sstream>
 #include <string>
@@ -853,5 +854,43 @@ TEST(rsMathUtils, RandfRange) {
         float val = rsRandf(5.0f);
         EXPECT_GE(val, 0.0f);
         EXPECT_LE(val, 5.0f);
+    }
+}
+
+TEST(rsMathUtils, RandfHandlesNegativeRange) {
+    // lattice calls rsRandf(150 - dSpeed) with dSpeed read unclamped from the
+    // registry, so a negative argument is reachable. It must stay defined and
+    // mirror the positive case, as x * (rand() / RAND_MAX) always did.
+    for (int i = 0; i < 200; ++i) {
+        float val = rsRandf(-5.0f);
+        EXPECT_LE(val, 0.0f);
+        EXPECT_GE(val, -5.0f);
+    }
+}
+
+TEST(rsMathUtils, RandfZeroRangeIsZero) {
+    EXPECT_FLOAT_EQ(rsRandf(0.0f), 0.0f);
+}
+
+TEST(rsMathUtils, RandiSingleValueRange) {
+    // rsRandi(1) has exactly one legal answer; the distribution bounds must not
+    // be off by one.
+    for (int i = 0; i < 50; ++i) {
+        EXPECT_EQ(rsRandi(1), 0);
+    }
+}
+
+TEST(rsMathUtils, RandiCoversItsWholeRange) {
+    // Guards against a collapsed or constant engine: over 2000 draws every
+    // bucket of a 4-wide range should come up at least once.
+    std::array<bool, 4> seen{};
+    for (int i = 0; i < 2000; ++i) {
+        int val = rsRandi(static_cast<int>(seen.size()));
+        ASSERT_GE(val, 0);
+        ASSERT_LT(val, static_cast<int>(seen.size()));
+        seen[val] = true;
+    }
+    for (size_t i = 0; i < seen.size(); ++i) {
+        EXPECT_TRUE(seen[i]) << "value " << i << " never produced";
     }
 }

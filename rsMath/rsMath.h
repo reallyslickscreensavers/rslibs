@@ -22,6 +22,7 @@
 #define RSMATH_H
 
 #include <math.h>
+#include <random>
 #include <stdlib.h>
 
 #ifdef __SSE__
@@ -41,18 +42,36 @@
 #define RS_DEG2RAD 0.0174532925f
 #define RS_RAD2DEG 57.2957795131f
 
- // Useful random number functions
- // Don't forget to initialize with srand()
+ // Useful random number functions.
+ // These seed themselves, so there is nothing to initialize; a caller's srand()
+ // no longer has any effect on them.
+ //
+ // The engine is thread_local rather than a plain static. microcosm runs two
+ // worker threads, and a shared std::mt19937 would be a data race, where the
+ // rand() this replaced was already per-thread on MSVC and locked in glibc.
+inline std::mt19937&
+rsRandGen()
+{
+	static thread_local std::mt19937 gen(std::random_device{}());
+	return gen;
+}
+
 inline int
 rsRandi(int x)
 {
-	return rand() % x;
+	// [0, x), as rand() % x was, but without its bias for ranges that do not
+	// divide RAND_MAX evenly.
+	return std::uniform_int_distribution<int>(0, x - 1)(rsRandGen());
 }
 
 inline float
 rsRandf(float x)
 {
-	return x * (float(rand()) / float(RAND_MAX));
+	// Scaling a canonical [0, 1) value keeps the old contract for every x.
+	// uniform_real_distribution(0, x) would be undefined for a negative x, and
+	// callers do pass one: lattice computes rsRandf(150 - dSpeed) from an
+	// unclamped registry value.
+	return x * std::uniform_real_distribution<float>(0.0f, 1.0f)(rsRandGen());
 }
 
 inline float
