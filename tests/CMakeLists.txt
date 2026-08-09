@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
 project(rslibs_tests LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+# C++17 to match the libraries and the sub-Makefiles. This was 14, which was
+# misleading rather than wrong: CMAKE_CXX_STANDARD is a floor, and GoogleTest
+# declares target_compile_features(... PUBLIC cxx_std_17), which propagates
+# here. The tests have always compiled as C++17; pinning GoogleTest to an older
+# tag would have silently dropped them to 14.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Fetch Google Test
