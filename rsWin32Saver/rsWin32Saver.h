@@ -85,7 +85,7 @@ LRESULT screenSaverProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // frames during this routine.
 void idleProc();
 // Use this function to set up the "settings" dialog box.
-BOOL screenSaverConfigureDialog(HWND dlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK screenSaverConfigureDialog(HWND dlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //----------------------------------------------------------------------------
 // The ScreenSaverProc function should call this function with any unhandled messages
