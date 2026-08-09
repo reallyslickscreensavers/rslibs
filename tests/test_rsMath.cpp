@@ -880,6 +880,16 @@ TEST(rsMathUtils, RandiSingleValueRange) {
     }
 }
 
+TEST(rsMathUtils, RandiNonPositiveRangeIsZero) {
+    // lattice calls rsRandi(11 - dPathrand) with dPathrand read unclamped from
+    // the registry, so x <= 0 is reachable. rand() % 0 divided by zero and
+    // uniform_int_distribution(0, -1) is undefined; zero is the only answer
+    // that could be in range.
+    EXPECT_EQ(rsRandi(0), 0);
+    EXPECT_EQ(rsRandi(-1), 0);
+    EXPECT_EQ(rsRandi(-100), 0);
+}
+
 TEST(rsMathUtils, RandiCoversItsWholeRange) {
     // Guards against a collapsed or constant engine: over 2000 draws every
     // bucket of a 4-wide range should come up at least once.

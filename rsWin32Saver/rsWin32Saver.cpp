@@ -23,6 +23,7 @@
 #include <commctrl.h>
 
 #include "rsWin32Saver.h"
+#include "rsWin32SaverSettings.h"
 
  //#define WINVER 0x0500
  //#include <fstream>
@@ -389,19 +390,6 @@ startScreenSaver(HWND parent)
 }
 
 //----------------------------------------------------------------------------
-// convert text to unsigned int
-
-static UINT
-atoui(LPCTSTR str)
-{
-	UINT returnval = 0;
-	while ((*str >= TEXT('0')) && (*str <= TEXT('9')))
-		returnval = ((returnval * 10) + (*str++ - TEXT('0')));
-
-	return returnval;
-}
-
-//----------------------------------------------------------------------------
 
 static int
 startSaverPreview(LPCTSTR str)
@@ -409,7 +397,7 @@ startSaverPreview(LPCTSTR str)
 	doingPreview = 1;
 
 	// get parent handle from string
-	HWND hParent = (HWND)(atoui(str));
+	HWND hParent = (HWND)(rsWin32Saver::parseUnsigned(str));
 
 	// only preview on a valid parent window (NOT full screen)
 	return((hParent && IsWindow(hParent)) ? startScreenSaver(hParent) : -1);
@@ -491,40 +479,27 @@ openConfigBox(HWND parent)
 int WINAPI
 WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow)
 {
-	LPCTSTR commandLine = cmdLine;
-	HWND parent = 0;
-
 	mainInstance = inst;
 
-	while (1)
+	// The parsing itself lives in a windows.h-free header so it can be tested
+	// without launching a saver; this switch is only the dispatch.
+	const rsWin32Saver::CommandLineAction action =
+		rsWin32Saver::parseCommandLine(cmdLine);
+
+	switch (action.mode)
 	{
-		switch (*commandLine)
-		{
-			case TEXT(' '):  // skip over whitespace
-			case TEXT('-'):
-			case TEXT('/'):
-				commandLine++;
-				break;
-			case TEXT('c'):  // open "settings" dialog box
-			case TEXT('C'):
-				return openConfigBox(GetForegroundWindow());
-			case TEXT('\0'):
-				return openConfigBox(NULL);
-			case TEXT('p'):  // run the preview
-			case TEXT('P'):
-				do
-					commandLine++;
-				while (*commandLine == TEXT(' '));  // skip over whitespace (I'm not sure why)
-				return startSaverPreview(commandLine);
-			case TEXT('s'):  // run the saver
-			case TEXT('S'):
-				return startScreenSaver(NULL);
-			case TEXT('w'):  // run windowed saver, for debugging purposes
-			case TEXT('W'):
-				return startWindowedSaver();
-			default:
-				return -1;
-		}
+		case rsWin32Saver::kSaverConfigureWithParent:
+			return openConfigBox(GetForegroundWindow());
+		case rsWin32Saver::kSaverConfigureNoParent:
+			return openConfigBox(NULL);
+		case rsWin32Saver::kSaverPreview:
+			return startSaverPreview(action.arg);
+		case rsWin32Saver::kSaverRun:
+			return startScreenSaver(NULL);
+		case rsWin32Saver::kSaverWindowed:
+			return startWindowedSaver();
+		case rsWin32Saver::kSaverInvalid:
+			break;
 	}
 
 	return -1;
@@ -536,12 +511,13 @@ WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow)
 void
 initFrameRateLimitSlider(HWND hdlg, int sliderID, int textID)
 {
-	SendDlgItemMessage(hdlg, sliderID, TBM_SETRANGE, 0, LPARAM(MAKELONG(DWORD(0), DWORD(1000))));
+	SendDlgItemMessage(hdlg, sliderID, TBM_SETRANGE, 0,
+		LPARAM(MAKELONG(DWORD(rsWin32Saver::kMinFrameRateLimit), DWORD(rsWin32Saver::kMaxFrameRateLimit))));
 	SendDlgItemMessage(hdlg, sliderID, TBM_SETPOS, 1, LPARAM(dFrameRateLimit));
 	SendDlgItemMessage(hdlg, sliderID, TBM_SETLINESIZE, 0, LPARAM(1));
 	SendDlgItemMessage(hdlg, sliderID, TBM_SETPAGESIZE, 0, LPARAM(50));
 	char cval[16];
-	sprintf_s(cval, "%d", dFrameRateLimit);
+	sprintf_s(cval, "%u", dFrameRateLimit);
 	SendDlgItemMessage(hdlg, textID, WM_SETTEXT, 0, LPARAM(cval));
 }
 
@@ -560,7 +536,7 @@ readFrameRateLimitFromRegistry()
 	LONG result;
 	HKEY skey;
 	DWORD valtype, valsize;
-	int val;
+	DWORD val;
 
 	// default value = no limit
 	dFrameRateLimit = 0;
@@ -572,8 +548,11 @@ readFrameRateLimitFromRegistry()
 	valsize = sizeof(val);
 
 	result = RegQueryValueEx(skey, "FrameRateLimit", 0, &valtype, (LPBYTE)&val, &valsize);
-	if (result == ERROR_SUCCESS)
-		dFrameRateLimit = val;
+	// Anything but a REG_DWORD of the expected width is not a frame rate. A
+	// REG_SZ would otherwise be reinterpreted as the first four bytes of its
+	// text, and a short value would leave val partly uninitialised.
+	if (result == ERROR_SUCCESS && valtype == REG_DWORD && valsize == sizeof(val))
+		dFrameRateLimit = rsWin32Saver::clampFrameRateLimit(val);
 
 	RegCloseKey(skey);
 }
