@@ -59,6 +59,13 @@ rsRandGen()
 inline int
 rsRandi(int x)
 {
+	// A caller can reach x <= 0 through an unclamped setting - lattice computes
+	// rsRandi(11 - dPathrand) straight from a registry value - where rand() % x
+	// was a division by zero and uniform_int_distribution(0, x - 1) is equally
+	// undefined. Zero is the only answer that could ever be in range, so return
+	// it rather than let a bad setting take the saver down.
+	if (x <= 1)
+		return 0;
 	// [0, x), as rand() % x was, but without its bias for ranges that do not
 	// divide RAND_MAX evenly.
 	return std::uniform_int_distribution<int>(0, x - 1)(rsRandGen());

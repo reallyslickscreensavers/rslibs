@@ -56,6 +56,7 @@ add_executable(rslibs_tests
     test_Rgbhsl.cpp
     test_Implicit.cpp
     test_rsUtility.cpp
+    test_rsWin32Saver.cpp
     ${RSMATH_SOURCES}
     ${RGBHSL_SOURCES}
     ${IMPLICIT_SOURCES}
