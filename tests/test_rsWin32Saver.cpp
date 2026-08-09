@@ -117,6 +117,126 @@ TEST(CommandLine, PreviewWithNoIdYieldsZeroWhichIsRejectedLater) {
     EXPECT_EQ(parseUnsigned(a.arg), 0u);
 }
 
+// --- dispatch -------------------------------------------------------------
+//
+// runCommandLine reaches Win32 only through SaverOps, so a table of recording
+// stubs stands in for the real entry points. Plain function pointers cannot
+// capture, hence the file-scope log.
+
+namespace {
+
+int g_fakeWindowObject = 0;  // its address stands in for an HWND
+
+struct DispatchLog {
+    int foregroundCalls;
+    int configureCalls;
+    void* configureParent;
+    int previewCalls;
+    const char* previewArg;
+    int runCalls;
+    int windowedCalls;
+
+    void reset() {
+        foregroundCalls = configureCalls = previewCalls = 0;
+        runCalls = windowedCalls = 0;
+        configureParent = 0;
+        previewArg = 0;
+    }
+    int totalOperations() const {
+        return configureCalls + previewCalls + runCalls + windowedCalls;
+    }
+};
+
+DispatchLog g_log;
+
+void* fakeForeground() { g_log.foregroundCalls++; return &g_fakeWindowObject; }
+int fakeConfigure(void* p) { g_log.configureCalls++; g_log.configureParent = p; return 11; }
+int fakePreview(const char* a) { g_log.previewCalls++; g_log.previewArg = a; return 22; }
+int fakeRun() { g_log.runCalls++; return 33; }
+int fakeWindowed() { g_log.windowedCalls++; return 44; }
+
+rsWin32Saver::SaverOps recordingOps() {
+    g_log.reset();
+    rsWin32Saver::SaverOps ops = {
+        fakeForeground, fakeConfigure, fakePreview, fakeRun, fakeWindowed
+    };
+    return ops;
+}
+
+int dispatch(const char* cmdLine, rsWin32Saver::SaverOps& ops) {
+    return rsWin32Saver::runCommandLine(parseCommandLine(cmdLine), ops);
+}
+
+}  // namespace
+
+TEST(Dispatch, ConfigureWithParentUsesTheForegroundWindow) {
+    rsWin32Saver::SaverOps ops = recordingOps();
+    EXPECT_EQ(dispatch("/c", ops), 11);
+    EXPECT_EQ(g_log.configureCalls, 1);
+    EXPECT_EQ(g_log.foregroundCalls, 1);
+    EXPECT_EQ(g_log.configureParent, &g_fakeWindowObject);
+}
+
+TEST(Dispatch, ConfigureWithoutArgumentsPassesNoParent) {
+    // The one rule in the dispatch that is not a plain one-to-one mapping. If
+    // these two modes ever collapse, the settings dialog silently changes which
+    // window it belongs to.
+    rsWin32Saver::SaverOps ops = recordingOps();
+    EXPECT_EQ(dispatch("", ops), 11);
+    EXPECT_EQ(g_log.configureCalls, 1);
+    EXPECT_EQ(g_log.configureParent, (void*)0);
+    EXPECT_EQ(g_log.foregroundCalls, 0) << "no parent means the foreground window is never asked for";
+}
+
+TEST(Dispatch, PreviewReceivesTheWindowId) {
+    rsWin32Saver::SaverOps ops = recordingOps();
+    EXPECT_EQ(dispatch("/p 12345", ops), 22);
+    EXPECT_EQ(g_log.previewCalls, 1);
+    ASSERT_NE(g_log.previewArg, (const char*)0);
+    EXPECT_EQ(std::string(g_log.previewArg), "12345");
+}
+
+TEST(Dispatch, RunAndWindowedRouteToTheirOwnOperations) {
+    rsWin32Saver::SaverOps ops = recordingOps();
+    EXPECT_EQ(dispatch("/s", ops), 33);
+    EXPECT_EQ(g_log.runCalls, 1);
+    EXPECT_EQ(g_log.windowedCalls, 0);
+
+    ops = recordingOps();
+    EXPECT_EQ(dispatch("/w", ops), 44);
+    EXPECT_EQ(g_log.windowedCalls, 1);
+    EXPECT_EQ(g_log.runCalls, 0);
+}
+
+TEST(Dispatch, InvalidRunsNothingAndReturnsMinusOne) {
+    rsWin32Saver::SaverOps ops = recordingOps();
+    EXPECT_EQ(dispatch("/x", ops), -1);
+    EXPECT_EQ(g_log.totalOperations(), 0);
+}
+
+TEST(Dispatch, EveryModeIsHandled) {
+    // Walks the enum through the sentinel, so a mode added without a matching
+    // case fails here instead of silently falling through to -1. Neither MSVC
+    // at /W3 nor GCC without -Wall would warn about it.
+    for (int m = 0; m < rsWin32Saver::kSaverModeCount; ++m) {
+        rsWin32Saver::SaverOps ops = recordingOps();
+        rsWin32Saver::CommandLineAction action;
+        action.mode = (rsWin32Saver::SaverMode)m;
+        action.arg = "0";
+
+        const int result = rsWin32Saver::runCommandLine(action, ops);
+
+        if (m == rsWin32Saver::kSaverInvalid) {
+            EXPECT_EQ(result, -1) << "invalid must stay invalid";
+            EXPECT_EQ(g_log.totalOperations(), 0);
+        } else {
+            EXPECT_EQ(g_log.totalOperations(), 1)
+                << "mode " << m << " reached no operation - is there a case for it?";
+            EXPECT_NE(result, -1) << "mode " << m << " fell through the switch";
+        }
+    }
+}
+
 TEST(ParseUnsigned, ReadsLeadingDigitsOnly) {
     EXPECT_EQ(parseUnsigned("0"), 0u);
     EXPECT_EQ(parseUnsigned("7"), 7u);

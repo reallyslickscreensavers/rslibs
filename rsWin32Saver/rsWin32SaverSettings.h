@@ -70,7 +70,12 @@ enum SaverMode
 	kSaverPreview,
 	kSaverRun,
 	kSaverWindowed,
-	kSaverInvalid
+	kSaverInvalid,
+	// Sentinel, keep last. Lets a test walk every mode, so a mode added here
+	// without a matching case in runCommandLine fails rather than silently
+	// falling through to -1 - neither MSVC at /W3 nor GCC without -Wall warns
+	// about an unhandled enumerator.
+	kSaverModeCount
 };
 
 struct CommandLineAction
@@ -138,6 +143,51 @@ parseCommandLine(const char* cmdLine)
 				return action;
 		}
 	}
+}
+
+
+// The operations a command line can dispatch to.
+//
+// Function pointers rather than direct calls, so the dispatch below can be
+// exercised without a window station. Parent windows travel as void* to keep
+// this header free of windows.h; WinMain casts them back to HWND.
+struct SaverOps
+{
+	void* (*foregroundWindow)();
+	int (*configure)(void* parent);
+	int (*preview)(const char* windowId);
+	int (*run)();
+	int (*windowed)();
+};
+
+
+// Carry out what the command line asked for.
+//
+// The only rule here that is not a plain one-to-one mapping: an explicit /c
+// parents the dialog to the foreground window, while a bare command line passes
+// no parent at all. Collapsing those two would change which window the settings
+// dialog belongs to.
+inline int
+runCommandLine(const CommandLineAction& action, const SaverOps& ops)
+{
+	switch (action.mode)
+	{
+		case kSaverConfigureWithParent:
+			return ops.configure(ops.foregroundWindow());
+		case kSaverConfigureNoParent:
+			return ops.configure(0);
+		case kSaverPreview:
+			return ops.preview(action.arg);
+		case kSaverRun:
+			return ops.run();
+		case kSaverWindowed:
+			return ops.windowed();
+		case kSaverInvalid:
+		case kSaverModeCount:
+			break;
+	}
+
+	return -1;
 }
 
 

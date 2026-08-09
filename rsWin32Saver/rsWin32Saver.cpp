@@ -476,33 +476,59 @@ openConfigBox(HWND parent)
 //-----------------------------------------------------------------------
 // main function
 
+// Thin bindings from the windows.h-free SaverOps to the real entry points.
+// Parent windows arrive as void* so the dispatch header need not know HWND.
+
+static void*
+foregroundWindowOp()
+{
+	return (void*)GetForegroundWindow();
+}
+
+static int
+configureOp(void* parent)
+{
+	return openConfigBox((HWND)parent);
+}
+
+static int
+previewOp(const char* windowId)
+{
+	return startSaverPreview(windowId);
+}
+
+static int
+runOp()
+{
+	return startScreenSaver(NULL);
+}
+
+static int
+windowedOp()
+{
+	return startWindowedSaver();
+}
+
+//-----------------------------------------------------------------------
+
 int WINAPI
 WinMain(HINSTANCE inst, HINSTANCE prevInst, LPSTR cmdLine, int cmdShow)
 {
 	mainInstance = inst;
 
-	// The parsing itself lives in a windows.h-free header so it can be tested
-	// without launching a saver; this switch is only the dispatch.
-	const rsWin32Saver::CommandLineAction action =
-		rsWin32Saver::parseCommandLine(cmdLine);
-
-	switch (action.mode)
+	// Both the parsing and the dispatch live in a windows.h-free header so they
+	// can be tested without a window station. All that is left here is binding
+	// them to the real Win32 entry points.
+	const rsWin32Saver::SaverOps ops =
 	{
-		case rsWin32Saver::kSaverConfigureWithParent:
-			return openConfigBox(GetForegroundWindow());
-		case rsWin32Saver::kSaverConfigureNoParent:
-			return openConfigBox(NULL);
-		case rsWin32Saver::kSaverPreview:
-			return startSaverPreview(action.arg);
-		case rsWin32Saver::kSaverRun:
-			return startScreenSaver(NULL);
-		case rsWin32Saver::kSaverWindowed:
-			return startWindowedSaver();
-		case rsWin32Saver::kSaverInvalid:
-			break;
-	}
+		foregroundWindowOp,
+		configureOp,
+		previewOp,
+		runOp,
+		windowedOp
+	};
 
-	return -1;
+	return rsWin32Saver::runCommandLine(rsWin32Saver::parseCommandLine(cmdLine), ops);
 }
 
 //----------------------------------------------------------------------------
