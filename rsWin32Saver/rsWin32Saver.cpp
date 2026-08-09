@@ -482,7 +482,7 @@ static int
 openConfigBox(HWND parent)
 {
 	return DialogBox(mainInstance, MAKEINTRESOURCE(DLG_SCRNSAVECONFIGURE),
-		parent, (DLGPROC)screenSaverConfigureDialog);
+		parent, screenSaverConfigureDialog);
 }
 
 //-----------------------------------------------------------------------
