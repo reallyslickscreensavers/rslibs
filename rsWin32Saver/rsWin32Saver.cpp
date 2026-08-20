@@ -49,6 +49,14 @@ static int startScreenSaver(HWND parent);
 static int openConfigBox(HWND parent);
 static int startSaverPreview(LPCTSTR str);
 
+static void runSaverFrame(rsTimer& timer)
+{
+	rsWin32Saver::runPacedFrame(dFrameRateLimit,
+		[&timer](double targetTime) { timer.wait(targetTime); },
+		[]() { idleProc(); });
+	Sleep(0);
+}
+
 //----------------------------------------------------------------------------
 
 LRESULT
@@ -347,12 +355,7 @@ startScreenSaver(HWND parent)
 		if (!childPreview)
 			SetForegroundWindow(mainWindow);
 
-		// variables for limiting frame rate
-		float desiredTimeStep = 0.0f;
-		float timeRemaining = 0.0f;
 		rsTimer timer;
-		if (dFrameRateLimit)
-			desiredTimeStep = 1.0f / float(dFrameRateLimit);
 
 		while (1)
 		{
@@ -362,17 +365,7 @@ startScreenSaver(HWND parent)
 				if (isSuspended)  // don't waste cycles if saver is suspended
 					Sleep(1);
 
-				if (dFrameRateLimit)
-				{  // frame rate is limited
-					timer.wait(1.0f / float(dFrameRateLimit));
-					idleProc();  // do idle processing (i.e. draw frames)
-					Sleep(0);
-				}
-				else
-				{  // frame rate is unbound (draw as fast as possible)
-					idleProc();  // do idle processing (i.e. draw frames)
-					Sleep(0);
-				}
+				runSaverFrame(timer);
 			}
 
 			// drop down to here once a message is found in the queue
@@ -440,14 +433,13 @@ startWindowedSaver()
 
 	if (mainWindow)
 	{
+		rsTimer timer;
 		while (1)
 		{
 			// Message loop
 			while (!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 			{
-				// do idle processing (i.e. draw frames)
-				idleProc();
-				Sleep(0);
+				runSaverFrame(timer);
 			}
 
 			// drop down to here once a message is found in the queue

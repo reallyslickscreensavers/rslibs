@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
 #include <rsWin32Saver/rsWin32SaverSettings.h>
 
 using rsWin32Saver::clampFrameRateLimit;
@@ -15,6 +16,7 @@ using rsWin32Saver::kMaxFrameRateLimit;
 using rsWin32Saver::kMinFrameRateLimit;
 using rsWin32Saver::parseCommandLine;
 using rsWin32Saver::parseUnsigned;
+using rsWin32Saver::runPacedFrame;
 using rsWin32Saver::CommandLineAction;
 
 TEST(FrameRateLimit, InRangeValuesPassThrough) {
@@ -48,6 +50,38 @@ TEST(FrameRateLimit, NegativeLookingDwordDoesNotBecomeUnlimited) {
     // Specifically, it must not land on 0, which would silently mean unlimited
     // - the opposite of what an oversized limit asks for.
     EXPECT_NE(clampFrameRateLimit(0xFFFFFFFFUL), 0u);
+}
+
+TEST(FramePacing, UnlimitedDrawsWithoutWaiting) {
+    int draws = 0;
+    std::vector<double> waits;
+
+    runPacedFrame(0,
+        [&waits](double seconds) { waits.push_back(seconds); },
+        [&draws]() { ++draws; });
+
+    EXPECT_TRUE(waits.empty());
+    EXPECT_EQ(draws, 1);
+}
+
+TEST(FramePacing, LimitedRatesWaitBeforeDrawing) {
+    const unsigned int rates[] = { 30, 100, 120, 1000 };
+    for(unsigned int rate : rates){
+        std::vector<char> order;
+        double waited = 0.0;
+
+        runPacedFrame(rate,
+            [&order, &waited](double seconds) {
+                order.push_back('w');
+                waited = seconds;
+            },
+            [&order]() { order.push_back('d'); });
+
+        ASSERT_EQ(order.size(), 2u);
+        EXPECT_EQ(order[0], 'w');
+        EXPECT_EQ(order[1], 'd');
+        EXPECT_DOUBLE_EQ(waited, 1.0 / double(rate));
+    }
 }
 
 TEST(CommandLine, RecognisesEachMode) {
