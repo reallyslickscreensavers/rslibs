@@ -598,30 +598,90 @@ TEST(rsMatrix, InvertSingularReturnsFalse) {
 }
 
 TEST(rsMatrix, RotationInvert) {
-    // TODO: rotationInvert() is buggy — it computes cofactor/det instead of
-    // adjugate/det, returning the original rotation rather than its inverse.
-    // The correct inverse of an orthonormal rotation matrix is its transpose.
-    // This test asserts the correct behavior and is skipped until the fix is
-    // applied.  See README.md "Known Bugs" for details.
-    GTEST_SKIP() << "rotationInvert() is known-buggy (see README.md); "
-                    "enable after the implementation is corrected";
-
     rsMatrix rot;
     rot.makeRotate(RS_PI / 3.0f, 0.0f, 0.0f, 1.0f);  // 60 degrees around Z
     rsMatrix inv;
     inv.rotationInvert(rot);
 
-    // For an orthonormal rotation the inverse equals the transpose.
-    // Verify rot * inv ≈ identity.
-    rsMatrix result;
-    result.copy(rot);
-    result.postMult(inv);
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j) {
-            float expected = (i == j) ? 1.0f : 0.0f;
-            EXPECT_NEAR(result[i + j * 4], expected, kEps)
-                << "rot * rotationInvert(rot) should be identity at [" << i << "," << j << "]";
+    // For an orthonormal rotation, the inverse is the transpose.
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col) {
+            EXPECT_NEAR(inv[row + col * 4], rot[col + row * 4], kEps)
+                << "inverse differs from transpose at [" << row << "," << col << "]";
         }
+
+    rsMatrix rotTimesInv;
+    rotTimesInv.copy(rot);
+    rotTimesInv.preMult(inv);  // rot * inv
+    rsMatrix invTimesRot;
+    invTimesRot.copy(rot);
+    invTimesRot.postMult(inv);  // inv * rot
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col) {
+            float expected = (row == col) ? 1.0f : 0.0f;
+            EXPECT_NEAR(rotTimesInv[row + col * 4], expected, kEps)
+                << "rot * inv should be identity at [" << row << "," << col << "]";
+            EXPECT_NEAR(invTimesRot[row + col * 4], expected, kEps)
+                << "inv * rot should be identity at [" << row << "," << col << "]";
+        }
+}
+
+TEST(rsMatrix, RotationInvertArbitraryAxisMatchesGeneralInverse) {
+    // Normalized (1, 2, 3) axis exercises every off-diagonal cofactor pair.
+    rsMatrix rot;
+    rot.makeRotate(0.731f, 0.26726124f, 0.53452248f, 0.80178373f);
+
+    rsMatrix rotationInv;
+    rotationInv.rotationInvert(rot);
+    rsMatrix generalInv;
+    ASSERT_TRUE(generalInv.invert(rot));
+
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col) {
+            const int index = row + col * 4;
+            EXPECT_NEAR(rotationInv[index], rot[col + row * 4], kEps)
+                << "inverse differs from transpose at [" << row << "," << col << "]";
+            EXPECT_NEAR(rotationInv[index], generalInv[index], kEps)
+                << "rotation and general inverses differ at [" << row << "," << col << "]";
+        }
+}
+
+TEST(rsMatrix, RotationInvertInPlace) {
+    rsMatrix rot;
+    rot.makeRotate(0.731f, 0.26726124f, 0.53452248f, 0.80178373f);
+    rsMatrix original;
+    original.copy(rot);
+
+    rot.rotationInvert(rot);
+
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col) {
+            EXPECT_NEAR(rot[row + col * 4], original[col + row * 4], kEps)
+                << "in-place inverse differs from transpose at [" << row << "," << col << "]";
+        }
+}
+
+TEST(rsMatrix, RotationInvertClearsNonRotationElements) {
+    rsMatrix rot;
+    rot.makeRotate(0.731f, 0.26726124f, 0.53452248f, 0.80178373f);
+    rot[3] = 1.0f;
+    rot[7] = 2.0f;
+    rot[11] = 3.0f;
+    rot[12] = 4.0f;
+    rot[13] = 5.0f;
+    rot[14] = 6.0f;
+    rot[15] = 7.0f;
+
+    rsMatrix inv;
+    inv.rotationInvert(rot);
+
+    EXPECT_FLOAT_EQ(inv[3], 0.0f);
+    EXPECT_FLOAT_EQ(inv[7], 0.0f);
+    EXPECT_FLOAT_EQ(inv[11], 0.0f);
+    EXPECT_FLOAT_EQ(inv[12], 0.0f);
+    EXPECT_FLOAT_EQ(inv[13], 0.0f);
+    EXPECT_FLOAT_EQ(inv[14], 0.0f);
+    EXPECT_FLOAT_EQ(inv[15], 1.0f);
 }
 
 TEST(rsMatrix, FromQuat) {

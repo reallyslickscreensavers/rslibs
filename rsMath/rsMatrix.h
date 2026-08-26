@@ -70,7 +70,9 @@ public:
 		const float ca, const float cb, const float cc);
 	bool invert();  // general matrix inversion
 	bool invert(const rsMatrix &mat);  // general matrix inversion
-	void rotationInvert(const rsMatrix &mat);  // rotation matrix inversion
+	// Invert the upper-left 3x3 rotation block and clear translation.
+	// The source may alias this matrix.
+	void rotationInvert(const rsMatrix &mat);
 	void fromQuat(const rsQuat &q);
 
 	float & operator [] (int i)

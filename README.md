@@ -32,23 +32,6 @@ cmake --build build
 
 ## Known Bugs
 
-### `rsMatrix::rotationInvert()` produces incorrect results
-
-**File:** `rsMath/rsMatrix.cpp`, lines 527–548
-
-The `rotationInvert()` method is intended to compute the inverse of a 3×3 rotation matrix embedded in a 4×4 matrix. However, the cofactor elements are assigned to the wrong positions — the method computes **cofactor / determinant** instead of **adjugate / determinant** (the adjugate is the *transpose* of the cofactor matrix). As a result, the output equals the original rotation matrix rather than its inverse.
-
-For a correct inverse the row/column indices of the cofactor assignments need to be swapped. For example, the current code assigns:
-
-```cpp
-m[1] = (mat[6] * mat[8] - mat[4] * mat[10]) / det;  // cofactor(0,1)
-m[4] = (mat[9] * mat[2] - mat[10] * mat[1]) / det;  // cofactor(1,0)
-```
-
-These should be transposed so that `m[1]` receives `cofactor(1,0)` and `m[4]` receives `cofactor(0,1)`.
-
-A regression test (`rsMatrix.RotationInvert` in `tests/test_rsMath.cpp`) exercises `rotationInvert()` and should be reviewed and potentially updated once the implementation is corrected.
-
 ### `rsQuat::fromMat()` produces incorrect results for some rotations
 
 **File:** `rsMath/rsQuat.cpp`, lines 218–270

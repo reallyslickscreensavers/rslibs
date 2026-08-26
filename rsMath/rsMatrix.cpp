@@ -526,22 +526,32 @@ rsMatrix::invert(const rsMatrix &mat)
 void
 rsMatrix::rotationInvert(const rsMatrix &mat)
 {
-	float det = mat[0] * mat[5] * mat[10]
-		+ mat[4] * mat[9] * mat[2]
-		+ mat[8] * mat[1] * mat[6]
-		- mat[2] * mat[5] * mat[8]
-		- mat[6] * mat[9] * mat[0]
-		- mat[10] * mat[1] * mat[4];
+	// Cache the source so this method also works when mat aliases *this.
+	const float a00(mat[0]);
+	const float a01(mat[4]);
+	const float a02(mat[8]);
+	const float a10(mat[1]);
+	const float a11(mat[5]);
+	const float a12(mat[9]);
+	const float a20(mat[2]);
+	const float a21(mat[6]);
+	const float a22(mat[10]);
 
-	m[0] = (mat[5] * mat[10] - mat[6] * mat[9]) / det;
-	m[1] = (mat[6] * mat[8] - mat[4] * mat[10]) / det;
-	m[2] = (mat[4] * mat[9] - mat[5] * mat[8]) / det;
-	m[4] = (mat[9] * mat[2] - mat[10] * mat[1]) / det;
-	m[5] = (mat[10] * mat[0] - mat[8] * mat[2]) / det;
-	m[6] = (mat[8] * mat[1] - mat[9] * mat[0]) / det;
-	m[8] = (mat[1] * mat[6] - mat[2] * mat[5]) / det;
-	m[9] = (mat[2] * mat[4] - mat[0] * mat[6]) / det;
-	m[10] = (mat[0] * mat[5] - mat[1] * mat[4]) / det;
+	const float det(a00 * (a11 * a22 - a12 * a21)
+		- a01 * (a10 * a22 - a12 * a20)
+		+ a02 * (a10 * a21 - a11 * a20));
+	const float rec_det(1.0f / det);
+
+	// Store the adjugate (the transposed cofactor matrix) in column order.
+	m[0] = (a11 * a22 - a12 * a21) * rec_det;
+	m[1] = (a12 * a20 - a10 * a22) * rec_det;
+	m[2] = (a10 * a21 - a11 * a20) * rec_det;
+	m[4] = (a02 * a21 - a01 * a22) * rec_det;
+	m[5] = (a00 * a22 - a02 * a20) * rec_det;
+	m[6] = (a01 * a20 - a00 * a21) * rec_det;
+	m[8] = (a01 * a12 - a02 * a11) * rec_det;
+	m[9] = (a02 * a10 - a00 * a12) * rec_det;
+	m[10] = (a00 * a11 - a01 * a10) * rec_det;
 	m[3] = m[7] = m[11] = m[12] = m[13] = m[14] = 0.0f;
 	m[15] = 1.0f;
 }
