@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rgbhsl", "Rgbhsl\Rgbhsl.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsMath", "rsMath\rsMath.vcxproj", "{8CEDD5EF-0615-4517-8845-054E44B17E3C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsUtility", "rsUtility\rsUtility.vcxproj", "{21A1A8B3-4602-4E4F-9E7A-9FE1F767B517}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rsText", "rsText\rsText.vcxproj", "{6FADE693-C3CE-4183-B245-5F9878C5155C}"
 EndProject
 Global
@@ -33,6 +35,10 @@ Global
 		{8CEDD5EF-0615-4517-8845-054E44B17E3C}.Debug|x86.Build.0 = Debug|Win32
 		{8CEDD5EF-0615-4517-8845-054E44B17E3C}.Release|x86.ActiveCfg = Release|Win32
 		{8CEDD5EF-0615-4517-8845-054E44B17E3C}.Release|x86.Build.0 = Release|Win32
+		{21A1A8B3-4602-4E4F-9E7A-9FE1F767B517}.Debug|x86.ActiveCfg = Debug|Win32
+		{21A1A8B3-4602-4E4F-9E7A-9FE1F767B517}.Debug|x86.Build.0 = Debug|Win32
+		{21A1A8B3-4602-4E4F-9E7A-9FE1F767B517}.Release|x86.ActiveCfg = Release|Win32
+		{21A1A8B3-4602-4E4F-9E7A-9FE1F767B517}.Release|x86.Build.0 = Release|Win32
 		{6FADE693-C3CE-4183-B245-5F9878C5155C}.Debug|x86.ActiveCfg = Debug|Win32
 		{6FADE693-C3CE-4183-B245-5F9878C5155C}.Debug|x86.Build.0 = Debug|Win32
 		{6FADE693-C3CE-4183-B245-5F9878C5155C}.Release|x86.ActiveCfg = Release|Win32
