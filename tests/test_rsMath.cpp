@@ -862,26 +862,76 @@ TEST(rsQuat, FromEuler) {
 }
 
 TEST(rsQuat, FromMatRoundTrip) {
-    // TODO: rsQuat::fromMat() is buggy — the else-branches use q[i] *= 0.5f
-    // instead of q[i] = b * 0.5f, leaving x/y/z at 0 for a default-constructed
-    // quaternion.  This test asserts correct round-trip behavior and is skipped
-    // until the implementation is fixed.  See README.md "Known Bugs".
-    GTEST_SKIP() << "rsQuat::fromMat() is known-buggy (see README.md); "
-                    "enable after the implementation is corrected";
+    struct RotationCase {
+        const char* name;
+        float angle;
+        float x;
+        float y;
+        float z;
+    };
 
-    // Create a known rotation, convert to matrix, convert back to quat,
-    // convert to matrix again, compare
+    const float invSqrt14 = 1.0f / sqrtf(14.0f);
+    const std::array<RotationCase, 7> cases{{
+        {"positive trace, mixed axis", RS_PI / 3.0f,
+            invSqrt14, 2.0f * invSqrt14, 3.0f * invSqrt14},
+        {"negative trace, X axis", 5.0f * RS_PI / 6.0f, 1.0f, 0.0f, 0.0f},
+        {"negative trace, Y axis", 5.0f * RS_PI / 6.0f, 0.0f, 1.0f, 0.0f},
+        {"negative trace, Z axis", 5.0f * RS_PI / 6.0f, 0.0f, 0.0f, 1.0f},
+        {"negative trace, X-dominant mixed axis", 5.0f * RS_PI / 6.0f,
+            3.0f * invSqrt14, 2.0f * invSqrt14, invSqrt14},
+        {"negative trace, Y-dominant mixed axis", 5.0f * RS_PI / 6.0f,
+            invSqrt14, 3.0f * invSqrt14, 2.0f * invSqrt14},
+        {"negative trace, Z-dominant mixed axis", 5.0f * RS_PI / 6.0f,
+            2.0f * invSqrt14, invSqrt14, 3.0f * invSqrt14},
+    }};
+
+    for (const RotationCase& testCase : cases) {
+        SCOPED_TRACE(testCase.name);
+
+        rsQuat original;
+        original.make(testCase.angle, testCase.x, testCase.y, testCase.z);
+        float originalMat[16];
+        original.toMat(originalMat);
+
+        rsQuat recovered;
+        recovered.fromMat(originalMat);
+
+        float lengthSquared = 0.0f;
+        float dot = 0.0f;
+        for (int i = 0; i < 4; ++i) {
+            EXPECT_TRUE(std::isfinite(recovered[i]))
+                << "recovered quaternion component [" << i << "] is not finite";
+            lengthSquared += recovered[i] * recovered[i];
+            dot += original[i] * recovered[i];
+        }
+        EXPECT_NEAR(sqrtf(lengthSquared), 1.0f, kEps);
+        EXPECT_NEAR(fabsf(dot), 1.0f, kEps);
+
+        float recoveredMat[16];
+        recovered.toMat(recoveredMat);
+        for (int i = 0; i < 16; ++i) {
+            EXPECT_NEAR(originalMat[i], recoveredMat[i], kEps)
+                << "fromMat round-trip differs at [" << i << "]";
+        }
+    }
+}
+
+TEST(rsQuat, FromMatOverwritesPreviousValue) {
+    const float invSqrt14 = 1.0f / sqrtf(14.0f);
     rsQuat original;
-    original.make(RS_PI / 3.0f, 0.0f, 0.0f, 1.0f);  // 60 deg around Z
-    float mat1[16];
-    original.toMat(mat1);
-    rsQuat recovered;
-    recovered.fromMat(mat1);
-    float mat2[16];
-    recovered.toMat(mat2);
-    for (int i = 0; i < 16; ++i) {
-        EXPECT_NEAR(mat1[i], mat2[i], 0.01f)
-            << "fromMat round-trip differs at [" << i << "]";
+    original.make(5.0f * RS_PI / 6.0f,
+        3.0f * invSqrt14, 2.0f * invSqrt14, invSqrt14);
+    float mat[16];
+    original.toMat(mat);
+
+    rsQuat defaultRecovered;
+    defaultRecovered.fromMat(mat);
+    rsQuat seededRecovered(0.25f, -0.5f, 0.75f, -0.125f);
+    seededRecovered.fromMat(mat);
+
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(seededRecovered[i], defaultRecovered[i], kEps)
+            << "fromMat result depends on previous component [" << i << "]";
     }
 }
 

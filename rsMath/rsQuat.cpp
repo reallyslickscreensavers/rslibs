@@ -236,35 +236,35 @@ rsQuat::fromMat(float* mat)
 		i = 0;
 		if (mat[5] > mat[0])
 			i = 1;
-		if (mat[10] > mat[5])
+		if (mat[10] > mat[i * 5])
 			i = 2;
 
 		if (i == 0)
 		{
 			b = float(sqrt(mat[0] - mat[5] - mat[10] + 1.0f));
-			q[0] *= 0.5f;
+			q[0] = b * 0.5f;
 			b = 0.5f / b;
 			q[3] = (mat[6] - mat[9]) * b;
-			q[1] = (mat[1] - mat[4]) * b;
-			q[2] = (mat[2] - mat[8]) * b;
+			q[1] = (mat[1] + mat[4]) * b;
+			q[2] = (mat[2] + mat[8]) * b;
 		}
-		if (i == 1)
+		else if (i == 1)
 		{
 			b = float(sqrt(mat[5] - mat[10] - mat[0] + 1.0f));
-			q[1] *= 0.5f;
+			q[1] = b * 0.5f;
 			b = 0.5f / b;
 			q[3] = (mat[8] - mat[2]) * b;
-			q[2] = (mat[6] - mat[9]) * b;
-			q[0] = (mat[4] - mat[1]) * b;
+			q[2] = (mat[6] + mat[9]) * b;
+			q[0] = (mat[4] + mat[1]) * b;
 		}
-		if (i == 2)
+		else
 		{
 			b = float(sqrt(mat[10] - mat[0] - mat[5] + 1.0f));
-			q[2] *= 0.5f;
+			q[2] = b * 0.5f;
 			b = 0.5f / b;
 			q[3] = (mat[1] - mat[4]) * b;
-			q[0] = (mat[8] - mat[2]) * b;
-			q[1] = (mat[9] - mat[6]) * b;
+			q[0] = (mat[8] + mat[2]) * b;
+			q[1] = (mat[9] + mat[6]) * b;
 		}
 	}
 }
