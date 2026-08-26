@@ -58,6 +58,19 @@ clampFrameRateLimit(unsigned long v)
 }
 
 
+// Run one frame with optional software pacing. Keeping the decision here makes
+// the normal, preview and /w loops share identical semantics, while injected
+// callbacks let tests verify the wait without a clock or a window station.
+template<typename Wait, typename Idle>
+inline void
+runPacedFrame(unsigned int frameRateLimit, Wait wait, Idle idle)
+{
+	if (frameRateLimit)
+		wait(1.0 / double(frameRateLimit));
+	idle();
+}
+
+
 // What the command line asked the saver to do.
 //
 // Configure has two forms because they differ in the parent window they pass
